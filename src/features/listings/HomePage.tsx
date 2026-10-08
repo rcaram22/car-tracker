@@ -3,6 +3,8 @@ import { Link } from 'react-router';
 import { btnPrimary, inputCls } from '../../components/ui';
 import { useListings } from '../../db/hooks';
 import { filterListings, sortListings } from '../../domain/sortFilter';
+import { BackupMenu } from '../backup/BackupMenu';
+import { BackupNudge } from '../backup/BackupNudge';
 import { FiltersBar } from './FiltersBar';
 import { useHomeState, type ViewMode } from './homeState';
 import { ListingGrid } from './ListingGrid';
@@ -59,7 +61,10 @@ export function HomePage() {
         <Link to="/listings/new" className={btnPrimary}>
           + Nueva
         </Link>
+        <BackupMenu />
       </header>
+
+      <BackupNudge hasListings={!!listings?.length} />
 
       <FiltersBar
         filters={state.filters}
