@@ -98,7 +98,7 @@ export function useHomeState() {
     (patch: Partial<HomeState>) => {
       const next = toHomeParams({ ...state, ...patch });
       writeStorage(STORAGE_KEY, next.toString());
-      setParams(next, { replace: true });
+      setParams(next, { replace: true, flushSync: true });
     },
     [state, setParams],
   );
