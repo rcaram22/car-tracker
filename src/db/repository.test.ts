@@ -94,3 +94,62 @@ describe('snapshot', () => {
     expect(after.listings[0].model).toBe('Golf Mk4 2.0');
   });
 });
+
+describe('history', () => {
+  it('records nothing on create', async () => {
+    const id = await repo.createListing({ ...base, price: 9500 });
+    expect(await repo.listEvents(id)).toEqual([]);
+  });
+
+  it('records real price and status changes, newest first', async () => {
+    const id = await repo.createListing({ ...base, price: 9500 });
+    await repo.updateListing(id, { price: 9000 });
+    await new Promise((r) => setTimeout(r, 2));
+    await repo.updateListing(id, { status: 'contacted' });
+    const events = await repo.listEvents(id);
+    expect(events.map(({ field, from, to }) => ({ field, from, to }))).toEqual([
+      { field: 'status', from: 'new', to: 'contacted' },
+      { field: 'price', from: 9500, to: 9000 },
+    ]);
+    expect(events[0].at).toBeGreaterThan(0);
+  });
+
+  it('ignores unchanged values and untracked fields', async () => {
+    const id = await repo.createListing({ ...base, price: 9500 });
+    await repo.updateListing(id, {
+      ...base,
+      price: 9500,
+      color: 'Azul',
+      rating: 3,
+    });
+    expect(await repo.listEvents(id)).toEqual([]);
+  });
+
+  it('records a cleared price', async () => {
+    const id = await repo.createListing({ ...base, price: 9500 });
+    await repo.updateListing(id, { price: undefined });
+    const [e] = await repo.listEvents(id);
+    expect(e).toMatchObject({ field: 'price', from: 9500 });
+    expect(e.to).toBeUndefined();
+  });
+
+  it('deleteEvent removes one row without touching the listing', async () => {
+    const id = await repo.createListing({ ...base, price: 9500 });
+    await repo.updateListing(id, { price: 9000 });
+    await repo.updateListing(id, { status: 'seen' });
+    const [latest, older] = await repo.listEvents(id);
+    await repo.deleteEvent(older.id);
+    expect((await repo.listEvents(id)).map((e) => e.id)).toEqual([latest.id]);
+    expect(await repo.getListing(id)).toMatchObject({
+      price: 9000,
+      status: 'seen',
+    });
+  });
+
+  it('deleteListing removes its history', async () => {
+    const id = await repo.createListing({ ...base, price: 9500 });
+    await repo.updateListing(id, { price: 9000 });
+    await repo.deleteListing(id);
+    expect((await repo.exportAll()).events).toEqual([]);
+  });
+});

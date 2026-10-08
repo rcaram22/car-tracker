@@ -62,6 +62,19 @@ export interface Photo extends PhotoData {
   createdAt: number;
 }
 
+export const TRACKED_FIELDS = ['price', 'status'] as const;
+
+export type TrackedField = (typeof TRACKED_FIELDS)[number];
+
+export interface ListingEvent {
+  id: string;
+  listingId: string;
+  field: TrackedField;
+  from?: number | ListingStatus;
+  to?: number | ListingStatus;
+  at: number;
+}
+
 export interface Note {
   id: string;
   listingId: string;

@@ -16,6 +16,7 @@ import {
   listingTitle,
 } from '../../domain/format';
 import type { ListingInput } from '../../domain/listing';
+import { HistoryPanel } from '../history/HistoryPanel';
 import { NotesPanel } from '../notes/NotesPanel';
 import { PhotoGallery } from '../photos/PhotoGallery';
 
@@ -131,6 +132,8 @@ export function ListingDetailPage() {
           </p>
         </section>
       )}
+
+      <HistoryPanel listingId={id} />
 
       <NotesPanel listingId={id} />
     </div>

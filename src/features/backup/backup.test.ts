@@ -25,11 +25,14 @@ async function seed() {
     0,
   );
   await repo.addNote(id, 'Tiene deuda');
+  await repo.updateListing(id, { price: 9000 });
   return id;
 }
 
 const emptyBackup = () =>
-  JSON.stringify(toBackup({ listings: [], photos: [], notes: [] }));
+  JSON.stringify(
+    toBackup({ listings: [], photos: [], notes: [], events: [] }),
+  );
 
 describe('base64', () => {
   it('round-trips bytes including large buffers', () => {
@@ -46,12 +49,14 @@ describe('toBackup / fromBackup', () => {
     const json = JSON.parse(JSON.stringify(toBackup(snap, 123)));
     expect(json).toMatchObject({
       app: 'car-tracker',
-      version: 1,
+      version: 2,
       exportedAt: 123,
     });
     const back = fromBackup(json);
     expect(back.listings).toEqual(snap.listings);
     expect(back.notes).toEqual(snap.notes);
+    expect(back.events).toHaveLength(1);
+    expect(back.events).toEqual(snap.events);
     expect(Array.from(new Uint8Array(back.photos[0].data))).toEqual([
       0, 255, 7,
     ]);
@@ -62,9 +67,31 @@ describe('toBackup / fromBackup', () => {
     ['other app', { app: 'x', version: 1, listings: [], notes: [], photos: [] }],
     [
       'future version',
-      { app: 'car-tracker', version: 2, listings: [], notes: [], photos: [] },
+      {
+        app: 'car-tracker',
+        version: 3,
+        listings: [],
+        notes: [],
+        photos: [],
+        events: [],
+      },
     ],
     ['missing arrays', { app: 'car-tracker', version: 1 }],
+    [
+      'v2 without events',
+      { app: 'car-tracker', version: 2, listings: [], notes: [], photos: [] },
+    ],
+    [
+      'bad event',
+      {
+        app: 'car-tracker',
+        version: 2,
+        listings: [],
+        notes: [],
+        photos: [],
+        events: [{ id: 'e', listingId: 'l', field: 'color', at: 0 }],
+      },
+    ],
     [
       'bad listing',
       {
@@ -96,6 +123,19 @@ describe('toBackup / fromBackup', () => {
     ],
   ])('rejects %s', (_, raw) => {
     expect(() => fromBackup(raw)).toThrow(BackupError);
+  });
+
+  it('still imports v1 backups, with empty history', () => {
+    const snap = fromBackup({
+      app: 'car-tracker',
+      version: 1,
+      exportedAt: 0,
+      listings: [{ id: 'l', model: 'Golf', status: 'new' }],
+      notes: [],
+      photos: [],
+    });
+    expect(snap.listings).toHaveLength(1);
+    expect(snap.events).toEqual([]);
   });
 });
 

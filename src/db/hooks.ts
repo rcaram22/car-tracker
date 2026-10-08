@@ -20,3 +20,7 @@ export function usePhoto(id?: string) {
 export function useNotes(listingId: string) {
   return useLiveQuery(() => repo.listNotes(listingId), [listingId]);
 }
+
+export function useEvents(listingId: string) {
+  return useLiveQuery(() => repo.listEvents(listingId), [listingId]);
+}

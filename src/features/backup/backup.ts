@@ -1,13 +1,16 @@
 import { exportAll, replaceAll, type DbSnapshot } from '../../db/repository';
 import {
+  TRACKED_FIELDS,
   isListingStatus,
   type Listing,
+  type ListingEvent,
   type Note,
   type Photo,
+  type TrackedField,
 } from '../../domain/listing';
 import { readStorage, writeStorage } from '../../lib/storage';
 
-export const BACKUP_VERSION = 1;
+export const BACKUP_VERSION = 2;
 export const EXPORTED_EVENT = 'car-tracker:exported';
 export const NUDGE_AFTER_DAYS = 14;
 const LAST_EXPORT_KEY = 'car-tracker:lastExportAt';
@@ -22,6 +25,7 @@ export interface BackupFile {
   listings: Listing[];
   notes: Note[];
   photos: BackupPhoto[];
+  events: ListingEvent[];
 }
 
 export class BackupError extends Error {}
@@ -50,6 +54,7 @@ export function toBackup(s: DbSnapshot, exportedAt = Date.now()): BackupFile {
     listings: s.listings,
     notes: s.notes,
     photos: s.photos.map((p) => ({ ...p, data: bufferToBase64(p.data) })),
+    events: s.events,
   };
 }
 
@@ -63,16 +68,18 @@ export function fromBackup(raw: unknown): DbSnapshot {
   if (!isRecord(raw) || raw.app !== 'car-tracker') {
     throw new BackupError('El archivo no es un backup de Car Tracker.');
   }
-  if (raw.version !== BACKUP_VERSION) {
+  if (raw.version !== 1 && raw.version !== BACKUP_VERSION) {
     throw new BackupError(
       `Versión de backup no soportada: ${String(raw.version)}.`,
     );
   }
   const { listings, notes, photos } = raw;
+  const events = raw.version === 1 ? [] : raw.events;
   if (
     !Array.isArray(listings) ||
     !Array.isArray(notes) ||
-    !Array.isArray(photos)
+    !Array.isArray(photos) ||
+    !Array.isArray(events)
   ) {
     throw new BackupError('El backup está incompleto.');
   }
@@ -82,7 +89,13 @@ export function fromBackup(raw: unknown): DbSnapshot {
         hasStrings(l, ['id', 'model']) && isListingStatus((l as Listing).status),
     ) ||
     !notes.every((n) => hasStrings(n, ['id', 'listingId', 'text'])) ||
-    !photos.every((p) => hasStrings(p, ['id', 'listingId', 'type', 'data']))
+    !photos.every((p) => hasStrings(p, ['id', 'listingId', 'type', 'data'])) ||
+    !events.every(
+      (e) =>
+        hasStrings(e, ['id', 'listingId']) &&
+        TRACKED_FIELDS.includes((e as ListingEvent).field as TrackedField) &&
+        typeof (e as ListingEvent).at === 'number',
+    )
   ) {
     throw new BackupError('El backup tiene datos inválidos.');
   }
@@ -90,6 +103,7 @@ export function fromBackup(raw: unknown): DbSnapshot {
     return {
       listings: listings as Listing[],
       notes: notes as Note[],
+      events: events as ListingEvent[],
       photos: (photos as BackupPhoto[]).map((p) => ({
         ...p,
         data: base64ToBuffer(p.data),
