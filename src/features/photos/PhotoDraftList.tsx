@@ -52,10 +52,10 @@ function DraftThumb({
   onCover,
 }: ThumbProps) {
   const url = useObjectUrl(draft.data, draft.type);
-  const iconBtn = 'rounded px-1.5 py-0.5 hover:bg-gray-200 disabled:opacity-30';
+  const iconBtn = 'rounded px-1.5 py-0.5 hover:bg-gray-200 dark:hover:bg-gray-600 disabled:opacity-30';
   return (
     <li
-      className={`relative overflow-hidden rounded-lg border-2 bg-white ${
+      className={`relative overflow-hidden rounded-lg border-2 bg-white dark:bg-gray-800 ${
         isCover ? 'border-blue-500' : 'border-transparent'
       }`}
     >
@@ -90,7 +90,7 @@ function DraftThumb({
           type="button"
           aria-label="Quitar foto"
           onClick={onRemove}
-          className={`${iconBtn} text-red-600`}
+          className={`${iconBtn} text-red-600 dark:text-red-400`}
         >
           ✕
         </button>

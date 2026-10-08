@@ -25,7 +25,7 @@ export function BackupNudge({ hasListings }: { hasListings: boolean }) {
   }
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-2 rounded-md bg-amber-50 p-3 text-sm text-amber-900">
+    <div className="flex flex-wrap items-center justify-between gap-2 rounded-md bg-amber-50 dark:bg-amber-900/30 p-3 text-sm text-amber-900 dark:text-amber-200">
       <span>
         {lastExportAt
           ? `Tu último backup es del ${formatDate(lastExportAt)}.`
@@ -46,7 +46,7 @@ export function BackupNudge({ hasListings }: { hasListings: boolean }) {
         </button>
         <button
           type="button"
-          className="text-amber-700"
+          className="text-amber-700 dark:text-amber-300"
           onClick={() => setDismissed(true)}
         >
           Más tarde

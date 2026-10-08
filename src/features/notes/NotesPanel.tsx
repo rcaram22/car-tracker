@@ -35,19 +35,19 @@ export function NotesPanel({ listingId }: { listingId: string }) {
     <section className="space-y-3">
       <h2 className="text-lg font-semibold">Notas</h2>
       {notes?.length === 0 && (
-        <p className="text-sm text-gray-500">Sin notas todavía.</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">Sin notas todavía.</p>
       )}
       <ul className="space-y-2">
         {notes?.map((n) => (
-          <li key={n.id} className="rounded-lg bg-white p-3 shadow-sm">
+          <li key={n.id} className="rounded-lg bg-white dark:bg-gray-800 p-3 shadow-sm">
             <p className="whitespace-pre-wrap">{n.text}</p>
-            <div className="mt-1 flex items-center justify-between text-xs text-gray-500">
+            <div className="mt-1 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
               <time>{formatDateTime(n.createdAt)}</time>
               <button
                 type="button"
                 aria-label="Borrar nota"
                 onClick={() => void remove(n.id)}
-                className="text-red-600 hover:underline"
+                className="text-red-600 dark:text-red-400 hover:underline"
               >
                 Borrar
               </button>

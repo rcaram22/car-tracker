@@ -60,13 +60,13 @@ export function PhotoDropzone({
         e.preventDefault();
         void handleFiles(Array.from(e.dataTransfer.files));
       }}
-      className="rounded-lg border-2 border-dashed border-gray-300 bg-white p-6 text-center text-sm text-gray-600"
+      className="rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 p-6 text-center text-sm text-gray-600 dark:text-gray-300"
     >
       <p>
         Pegá fotos con{' '}
-        <kbd className="rounded bg-gray-100 px-1">Ctrl/Cmd+V</kbd>, arrastralas
+        <kbd className="rounded bg-gray-100 dark:bg-gray-700 px-1">Ctrl/Cmd+V</kbd>, arrastralas
         acá o{' '}
-        <label className="cursor-pointer text-blue-600 underline">
+        <label className="cursor-pointer text-blue-600 dark:text-blue-400 underline">
           elegí archivos
           <input
             type="file"
@@ -80,7 +80,7 @@ export function PhotoDropzone({
           />
         </label>
       </p>
-      {busy && <p className="mt-2 text-gray-500">Procesando fotos…</p>}
+      {busy && <p className="mt-2 text-gray-500 dark:text-gray-400">Procesando fotos…</p>}
     </div>
   );
 }

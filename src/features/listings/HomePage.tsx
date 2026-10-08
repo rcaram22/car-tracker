@@ -41,7 +41,7 @@ export function HomePage() {
           }
           className={`${inputCls} sm:!w-72`}
         />
-        <div className="inline-flex overflow-hidden rounded-md border border-gray-300">
+        <div className="inline-flex overflow-hidden rounded-md border border-gray-300 dark:border-gray-600">
           {VIEWS.map(({ mode, label }) => (
             <button
               key={mode}
@@ -50,8 +50,8 @@ export function HomePage() {
               onClick={() => update({ view: mode })}
               className={`px-3 py-2 text-sm ${
                 state.view === mode
-                  ? 'bg-gray-900 text-white'
-                  : 'bg-white text-gray-700'
+                  ? 'bg-gray-900 text-white dark:bg-blue-600'
+                  : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200'
               }`}
             >
               {label}
@@ -74,9 +74,9 @@ export function HomePage() {
       />
 
       {listings === undefined ? (
-        <p className="text-gray-500">Cargando…</p>
+        <p className="text-gray-500 dark:text-gray-400">Cargando…</p>
       ) : visible.length === 0 ? (
-        <p className="rounded-lg bg-white p-8 text-center text-gray-500">
+        <p className="rounded-lg bg-white dark:bg-gray-800 p-8 text-center text-gray-500 dark:text-gray-400">
           {listings.length === 0
             ? 'Todavía no cargaste ninguna publicación.'
             : 'Ninguna publicación coincide con los filtros.'}
@@ -91,7 +91,7 @@ export function HomePage() {
         />
       )}
 
-      <p className="text-sm text-gray-500">
+      <p className="text-sm text-gray-500 dark:text-gray-400">
         {visible.length} de {listings?.length ?? 0}
       </p>
     </div>

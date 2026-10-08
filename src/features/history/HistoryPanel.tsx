@@ -36,12 +36,12 @@ export function HistoryPanel({ listingId }: { listingId: string }) {
     <section className="space-y-3">
       <h2 className="text-lg font-semibold">Historial</h2>
       {events?.length === 0 && (
-        <p className="text-sm text-gray-500">Sin cambios registrados.</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">Sin cambios registrados.</p>
       )}
       {!!events?.length && (
-        <div className="overflow-x-auto rounded-lg bg-white shadow-sm">
+        <div className="overflow-x-auto rounded-lg bg-white dark:bg-gray-800 shadow-sm">
           <table className="w-full text-left text-sm">
-            <thead className="bg-gray-50 text-gray-600">
+            <thead className="bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-300">
               <tr>
                 <th className="px-3 py-2 font-medium">Fecha</th>
                 <th className="px-3 py-2 font-medium">Campo</th>
@@ -52,8 +52,8 @@ export function HistoryPanel({ listingId }: { listingId: string }) {
             </thead>
             <tbody>
               {events.map((e) => (
-                <tr key={e.id} className="border-t border-gray-100">
-                  <td className="whitespace-nowrap px-3 py-2 text-gray-500">
+                <tr key={e.id} className="border-t border-gray-100 dark:border-gray-700">
+                  <td className="whitespace-nowrap px-3 py-2 text-gray-500 dark:text-gray-400">
                     {formatDateTime(e.at)}
                   </td>
                   <td className="px-3 py-2">{FIELD_LABELS[e.field]}</td>
@@ -64,7 +64,7 @@ export function HistoryPanel({ listingId }: { listingId: string }) {
                       type="button"
                       aria-label="Borrar cambio"
                       onClick={() => void remove(e.id)}
-                      className="text-xs text-red-600 hover:underline"
+                      className="text-xs text-red-600 dark:text-red-400 hover:underline"
                     >
                       Borrar
                     </button>

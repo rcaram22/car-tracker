@@ -50,7 +50,7 @@ export function BackupMenu() {
     }
   };
 
-  const item = 'block w-full px-4 py-2 text-left text-sm hover:bg-gray-100';
+  const item = 'block w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700';
 
   return (
     <div className="relative">
@@ -66,7 +66,7 @@ export function BackupMenu() {
       {open && (
         <div
           role="menu"
-          className="absolute right-0 z-20 mt-1 w-60 rounded-md border border-gray-200 bg-white py-1 shadow-lg"
+          className="absolute right-0 z-20 mt-1 w-60 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 py-1 shadow-lg"
         >
           <button
             role="menuitem"

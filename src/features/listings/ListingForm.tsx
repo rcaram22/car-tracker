@@ -204,7 +204,7 @@ export function ListingForm({
               className={inputCls}
               aria-invalid={!!error}
             />
-            {error && <p className="text-sm text-red-600">{error}</p>}
+            {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
           </Field>
           );
         })}
@@ -263,11 +263,11 @@ function Field({
   return (
     <div className={`flex flex-col gap-1 ${wide ? 'sm:col-span-2' : ''}`}>
       {id ? (
-        <label htmlFor={id} className="text-sm font-medium text-gray-700">
+        <label htmlFor={id} className="text-sm font-medium text-gray-700 dark:text-gray-200">
           {label}
         </label>
       ) : (
-        <span className="text-sm font-medium text-gray-700">{label}</span>
+        <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{label}</span>
       )}
       {children}
     </div>

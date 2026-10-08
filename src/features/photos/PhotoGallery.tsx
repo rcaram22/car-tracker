@@ -34,7 +34,7 @@ export function PhotoGallery({
 
   if (!photos.length) {
     return (
-      <div className="flex aspect-[4/3] items-center justify-center rounded-lg bg-gray-100 text-gray-400">
+      <div className="flex aspect-[4/3] items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-400">
         Sin fotos
       </div>
     );
@@ -52,7 +52,7 @@ export function PhotoGallery({
       >
         <PhotoImg
           photo={photos[safeIndex]}
-          className="aspect-[4/3] w-full rounded-lg bg-gray-100 object-cover"
+          className="aspect-[4/3] w-full rounded-lg bg-gray-100 dark:bg-gray-700 object-cover"
         />
       </button>
       {photos.length > 1 && (

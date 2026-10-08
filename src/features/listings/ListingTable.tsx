@@ -68,7 +68,7 @@ const columns = [
           target="_blank"
           rel="noreferrer"
           onClick={(e) => e.stopPropagation()}
-          className="text-blue-600 underline"
+          className="text-blue-600 dark:text-blue-400 underline"
         >
           Ver ↗
         </a>
@@ -104,9 +104,9 @@ export function ListingTable({ listings, sort, onSort }: Props) {
     );
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white">
+    <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800">
       <table className="w-full text-left text-sm">
-        <thead className="bg-gray-50 text-gray-600">
+        <thead className="bg-gray-50 dark:bg-gray-900 text-gray-600 dark:text-gray-300">
           {table.getHeaderGroups().map((hg) => (
             <tr key={hg.id}>
               {hg.headers.map((h) => {
@@ -124,7 +124,7 @@ export function ListingTable({ listings, sort, onSort }: Props) {
                       <button
                         type="button"
                         onClick={() => toggle(id)}
-                        className="hover:text-gray-900"
+                        className="hover:text-gray-900 dark:hover:text-white"
                       >
                         {label}
                         {sort.field === id && (sort.dir === 'asc' ? ' ↑' : ' ↓')}
@@ -143,7 +143,7 @@ export function ListingTable({ listings, sort, onSort }: Props) {
             <tr
               key={row.id}
               onClick={() => navigate(`/listings/${row.id}`)}
-              className="cursor-pointer border-t border-gray-100 hover:bg-blue-50"
+              className="cursor-pointer border-t border-gray-100 dark:border-gray-700 hover:bg-blue-50 dark:hover:bg-gray-700"
             >
               {row.getVisibleCells().map((cell) => (
                 <td key={cell.id} className="whitespace-nowrap px-3 py-2">

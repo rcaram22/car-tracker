@@ -35,7 +35,7 @@ export function EditListingPage() {
   const photos = usePhotos(id);
 
   if (listing === undefined || photos === undefined) {
-    return <p className="p-4 text-gray-500">Cargando…</p>;
+    return <p className="p-4 text-gray-500 dark:text-gray-400">Cargando…</p>;
   }
   if (listing === null) {
     return <NotFound message="No encontramos esa publicación." />;

@@ -38,7 +38,7 @@ export function ListingCard({ listing }: { listing: Listing }) {
   return (
     <Link
       to={`/listings/${listing.id}`}
-      className="group flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition hover:shadow-md"
+      className="group flex flex-col overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm transition hover:shadow-md"
     >
       <div
         className="group/photo relative flex aspect-[4/3] items-center justify-center overflow-hidden"
@@ -94,7 +94,7 @@ export function ListingCard({ listing }: { listing: Listing }) {
           <StatusBadge status={listing.status} />
         </div>
         <p className="text-lg font-bold">{formatPrice(listing.price)}</p>
-        <div className="mt-auto flex items-center justify-between text-sm text-gray-500">
+        <div className="mt-auto flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
           <span>{formatKm(listing.km)}</span>
           <ScoreBadge value={listing.rating} size="sm" />
         </div>

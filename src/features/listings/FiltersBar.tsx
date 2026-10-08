@@ -34,7 +34,7 @@ export function FiltersBar({ filters, sort, onFilters, onSort }: Props) {
   const small = `${inputCls} !py-1`;
 
   return (
-    <div className="flex flex-wrap items-center gap-x-5 gap-y-3 rounded-lg bg-white p-3 text-sm shadow-sm">
+    <div className="flex flex-wrap items-center gap-x-5 gap-y-3 rounded-lg bg-white dark:bg-gray-800 p-3 text-sm shadow-sm">
       <fieldset className="flex flex-wrap gap-1.5">
         <legend className="sr-only">Estado</legend>
         {LISTING_STATUSES.map((s) => {
@@ -44,8 +44,8 @@ export function FiltersBar({ filters, sort, onFilters, onSort }: Props) {
               key={s}
               className={`cursor-pointer rounded-full border px-2.5 py-1 ${
                 on
-                  ? 'border-blue-500 bg-blue-50 text-blue-700'
-                  : 'border-gray-300 text-gray-500'
+                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300'
+                  : 'border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400'
               }`}
             >
               <input
@@ -128,7 +128,7 @@ export function FiltersBar({ filters, sort, onFilters, onSort }: Props) {
           onClick={() =>
             onSort({ ...sort, dir: sort.dir === 'asc' ? 'desc' : 'asc' })
           }
-          className="rounded border border-gray-300 px-2 py-1"
+          className="rounded border border-gray-300 dark:border-gray-600 px-2 py-1"
         >
           {sort.dir === 'asc' ? '↑' : '↓'}
         </button>

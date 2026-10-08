@@ -29,7 +29,7 @@ export function ListingDetailPage() {
   const photos = usePhotos(id);
 
   if (listing === undefined || photos === undefined) {
-    return <p className="p-4 text-gray-500">Cargando…</p>;
+    return <p className="p-4 text-gray-500 dark:text-gray-400">Cargando…</p>;
   }
   if (listing === null) {
     return <NotFound message="No encontramos esa publicación." />;
@@ -52,14 +52,14 @@ export function ListingDetailPage() {
 
   return (
     <div className="mx-auto max-w-5xl space-y-6 p-4">
-      <Link to="/" className="text-sm text-blue-600 hover:underline">
+      <Link to="/" className="text-sm text-blue-600 dark:text-blue-400 hover:underline">
         ← Volver
       </Link>
 
       <header className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold">{listingTitle(listing)}</h1>
-          <p className="text-xl font-semibold text-gray-700">
+          <p className="text-xl font-semibold text-gray-700 dark:text-gray-200">
             {formatPrice(listing.price)}
           </p>
         </div>
@@ -85,7 +85,7 @@ export function ListingDetailPage() {
         />
 
         <div className="space-y-4">
-          <div className="flex flex-wrap items-center gap-4 rounded-lg bg-white p-3 shadow-sm">
+          <div className="flex flex-wrap items-center gap-4 rounded-lg bg-white dark:bg-gray-800 p-3 shadow-sm">
             <div className="flex items-start gap-2">
               <ScoreBadge value={listing.rating} />
               <ScoreInput
@@ -102,7 +102,7 @@ export function ListingDetailPage() {
             </div>
           </div>
 
-          <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 rounded-lg bg-white p-4 text-sm shadow-sm">
+          <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 rounded-lg bg-white dark:bg-gray-800 p-4 text-sm shadow-sm">
             <Row label="Modelo">{listing.model}</Row>
             <Row label="Color">{formatValue(listing.color)}</Row>
             <Row label="Año">{formatValue(listing.year)}</Row>
@@ -115,7 +115,7 @@ export function ListingDetailPage() {
                   href={listing.url}
                   target="_blank"
                   rel="noreferrer"
-                  className="text-blue-600 underline"
+                  className="text-blue-600 dark:text-blue-400 underline"
                 >
                   Ver publicación ↗
                 </a>
@@ -132,7 +132,7 @@ export function ListingDetailPage() {
       {listing.description && (
         <section className="space-y-2">
           <h2 className="text-lg font-semibold">Descripción</h2>
-          <p className="whitespace-pre-wrap rounded-lg bg-white p-4 text-sm shadow-sm">
+          <p className="whitespace-pre-wrap rounded-lg bg-white dark:bg-gray-800 p-4 text-sm shadow-sm">
             {listing.description}
           </p>
         </section>
@@ -148,7 +148,7 @@ export function ListingDetailPage() {
 function Row({ label, children }: { label: string; children: ReactNode }) {
   return (
     <>
-      <dt className="text-gray-500">{label}</dt>
+      <dt className="text-gray-500 dark:text-gray-400">{label}</dt>
       <dd>{children}</dd>
     </>
   );
