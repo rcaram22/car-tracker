@@ -9,8 +9,15 @@ export function useListing(id: string) {
   return useLiveQuery(async () => (await repo.getListing(id)) ?? null, [id]);
 }
 
-export function usePhotos(listingId: string) {
-  return useLiveQuery(() => repo.listPhotos(listingId), [listingId]);
+export function usePhotos(listingId: string, enabled = true) {
+  return useLiveQuery(
+    () => (enabled ? repo.listPhotos(listingId) : undefined),
+    [listingId, enabled],
+  );
+}
+
+export function usePhotoCount(listingId: string) {
+  return useLiveQuery(() => repo.countPhotos(listingId), [listingId]);
 }
 
 export function usePhoto(id?: string) {

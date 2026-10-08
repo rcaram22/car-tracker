@@ -66,6 +66,10 @@ export function listPhotos(listingId: string): Promise<Photo[]> {
   return db.photos.where('listingId').equals(listingId).sortBy('order');
 }
 
+export function countPhotos(listingId: string): Promise<number> {
+  return db.photos.where('listingId').equals(listingId).count();
+}
+
 export function getPhoto(id: string): Promise<Photo | undefined> {
   return db.photos.get(id);
 }

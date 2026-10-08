@@ -1,7 +1,8 @@
+import { useState, type MouseEvent } from 'react';
 import { Link } from 'react-router';
 import { StarRating } from '../../components/StarRating';
 import { StatusBadge } from '../../components/Status';
-import { usePhoto } from '../../db/hooks';
+import { usePhoto, usePhotoCount, usePhotos } from '../../db/hooks';
 import {
   colorToHex,
   formatKm,
@@ -13,7 +14,26 @@ import { useObjectUrl } from '../../lib/useObjectUrl';
 
 export function ListingCard({ listing }: { listing: Listing }) {
   const cover = usePhoto(listing.coverPhotoId);
-  const url = useObjectUrl(cover?.data, cover?.type);
+  const count = usePhotoCount(listing.id) ?? 0;
+  const [offset, setOffset] = useState(0);
+  const [browsing, setBrowsing] = useState(false);
+  // Only the cover is read until the user starts browsing, so the grid stays light
+  const photos = usePhotos(listing.id, browsing);
+
+  const coverIndex = cover?.order ?? 0;
+  const index = count ? (((coverIndex + offset) % count) + count) % count : 0;
+  const shown = photos?.[index] ?? cover;
+  const url = useObjectUrl(shown?.data, shown?.type);
+
+  const step = (delta: number) => (e: MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setBrowsing(true);
+    setOffset((o) => o + delta);
+  };
+
+  const arrow =
+    'absolute top-1/2 -translate-y-1/2 rounded-full bg-black/40 px-2.5 py-1 text-lg leading-none text-white opacity-0 transition hover:bg-black/60 group-hover/photo:opacity-100 focus:opacity-100 [@media(hover:none)]:opacity-100';
 
   return (
     <Link
@@ -21,19 +41,49 @@ export function ListingCard({ listing }: { listing: Listing }) {
       className="group flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition hover:shadow-md"
     >
       <div
-        className="relative flex aspect-[4/3] items-center justify-center overflow-hidden"
+        className="group/photo relative flex aspect-[4/3] items-center justify-center overflow-hidden"
         style={url ? undefined : { backgroundColor: colorToHex(listing.color) }}
       >
         {url ? (
           <img
             src={url}
-            alt=""
+            alt={`Foto ${index + 1} de ${count}`}
             className="absolute inset-0 h-full w-full object-cover"
           />
         ) : (
           <span className="rounded bg-white/80 px-2 py-0.5 text-xs text-gray-600">
             Sin fotos
           </span>
+        )}
+        {count > 1 && (
+          <>
+            <button
+              type="button"
+              aria-label="Foto anterior"
+              onClick={step(-1)}
+              className={`${arrow} left-2`}
+            >
+              ‹
+            </button>
+            <button
+              type="button"
+              aria-label="Foto siguiente"
+              onClick={step(1)}
+              className={`${arrow} right-2`}
+            >
+              ›
+            </button>
+            <div className="absolute bottom-2 flex gap-1 opacity-0 transition group-hover/photo:opacity-100 [@media(hover:none)]:opacity-100">
+              {Array.from({ length: count }, (_, i) => (
+                <span
+                  key={i}
+                  className={`h-1.5 w-1.5 rounded-full ${
+                    i === index ? 'bg-white' : 'bg-white/50'
+                  }`}
+                />
+              ))}
+            </div>
+          </>
         )}
       </div>
       <div className="flex flex-1 flex-col gap-1 p-3">
