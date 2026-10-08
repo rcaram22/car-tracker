@@ -1,6 +1,7 @@
 import { createBrowserRouter, type RouteObject } from 'react-router';
 import { Layout } from './components/Layout';
 import { NotFound } from './components/NotFound';
+import { HomePage } from './features/listings/HomePage';
 import {
   EditListingPage,
   NewListingPage,
@@ -10,7 +11,7 @@ export const routes: RouteObject[] = [
   {
     element: <Layout />,
     children: [
-      { path: '/', element: <p className="p-4">Home</p> },
+      { path: '/', element: <HomePage /> },
       { path: '/listings/new', element: <NewListingPage /> },
       { path: '/listings/:id/edit', element: <EditListingPage /> },
       { path: '*', element: <NotFound /> },
