@@ -26,8 +26,6 @@ export function isListingStatus(v: unknown): v is ListingStatus {
   return LISTING_STATUSES.includes(v as ListingStatus);
 }
 
-export type Rating = 1 | 2 | 3 | 4 | 5;
-
 export interface Listing {
   id: string;
   model: string;
@@ -38,7 +36,7 @@ export interface Listing {
   url?: string;
   condition?: string;
   description?: string;
-  rating?: Rating;
+  rating?: number;
   status: ListingStatus;
   coverPhotoId?: string;
   createdAt: number;

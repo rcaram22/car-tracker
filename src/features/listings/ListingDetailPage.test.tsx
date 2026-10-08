@@ -21,7 +21,7 @@ describe('ListingDetailPage', () => {
     ).toBeInTheDocument();
   });
 
-  it('shows the data sheet with ?? for missing values and updates rating inline', async () => {
+  it('shows the data sheet with ?? for missing values and updates the score inline', async () => {
     const id = await repo.createListing({
       model: 'Golf Mk4 2.0',
       status: 'new',
@@ -33,10 +33,11 @@ describe('ListingDetailPage', () => {
     ).toBeInTheDocument();
     expect(screen.getAllByText('$ 9,375').length).toBeGreaterThan(0);
     expect(screen.getAllByText('??').length).toBeGreaterThan(0);
-    await userEvent.click(screen.getByRole('radio', { name: '4 estrellas' }));
+    await userEvent.type(screen.getByLabelText('Puntaje'), '9{Enter}');
     await waitFor(async () =>
-      expect((await repo.getListing(id))!.rating).toBe(4),
+      expect((await repo.getListing(id))!.rating).toBe(9),
     );
+    expect(await screen.findByLabelText('Puntaje 9.0')).toBeInTheDocument();
   });
 
   it('deletes after confirmation and goes home', async () => {

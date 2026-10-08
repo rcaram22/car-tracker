@@ -27,7 +27,7 @@ export const SORT_LABELS: Record<SortField, string> = {
   km: 'Km',
   price: 'Precio',
   condition: 'Condición',
-  rating: 'Estrellas',
+  rating: 'Puntaje',
   status: 'Estado',
   updatedAt: 'Actualizado',
 };

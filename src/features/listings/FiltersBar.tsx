@@ -61,7 +61,7 @@ export function FiltersBar({ filters, sort, onFilters, onSort }: Props) {
       </fieldset>
 
       <label className="flex items-center gap-1.5">
-        Estrellas
+        Puntaje
         <select
           value={filters.minRating ?? ''}
           onChange={(e) =>
@@ -73,9 +73,9 @@ export function FiltersBar({ filters, sort, onFilters, onSort }: Props) {
           className={`${small} !w-auto`}
         >
           <option value="">Cualquiera</option>
-          {[1, 2, 3, 4, 5].map((n) => (
+          {[5, 6, 7, 8, 9].map((n) => (
             <option key={n} value={n}>
-              {'★'.repeat(n)}+
+              {n}+
             </option>
           ))}
         </select>

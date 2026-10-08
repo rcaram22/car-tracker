@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { NotFound } from '../../components/NotFound';
-import { StarRating } from '../../components/StarRating';
+import { ScoreBadge } from '../../components/ScoreBadge';
+import { ScoreInput } from '../../components/ScoreInput';
 import { StatusSelect } from '../../components/Status';
 import { useToast } from '../../components/Toast';
 import { btnDanger, btnSecondary } from '../../components/ui';
@@ -85,10 +86,14 @@ export function ListingDetailPage() {
 
         <div className="space-y-4">
           <div className="flex flex-wrap items-center gap-4 rounded-lg bg-white p-3 shadow-sm">
-            <StarRating
-              value={listing.rating}
-              onChange={(rating) => void patch({ rating })}
-            />
+            <div className="flex items-start gap-2">
+              <ScoreBadge value={listing.rating} />
+              <ScoreInput
+                key={listing.rating ?? 'none'}
+                value={listing.rating}
+                onSave={(rating) => void patch({ rating })}
+              />
+            </div>
             <div className="w-48">
               <StatusSelect
                 value={listing.status}

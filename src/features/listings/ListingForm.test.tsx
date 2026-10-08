@@ -94,4 +94,24 @@ describe('ListingForm', () => {
     finish({ data: new ArrayBuffer(1), type: 'image/jpeg' });
     await waitFor(() => expect(save).toBeEnabled());
   });
+
+  it('submits the score with comma decimals', async () => {
+    const onSubmit = setup();
+    await userEvent.type(screen.getByLabelText('Modelo *'), 'Golf');
+    await userEvent.type(screen.getByLabelText('Puntaje (1–10)'), '8,5');
+    await userEvent.click(screen.getByRole('button', { name: 'Guardar' }));
+    await waitFor(() => expect(onSubmit).toHaveBeenCalled());
+    expect(onSubmit.mock.calls[0][0].rating).toBe(8.5);
+  });
+
+  it('rejects a score outside 0.5 steps', async () => {
+    const onSubmit = setup();
+    await userEvent.type(screen.getByLabelText('Modelo *'), 'Golf');
+    await userEvent.type(screen.getByLabelText('Puntaje (1–10)'), '8.3');
+    await userEvent.click(screen.getByRole('button', { name: 'Guardar' }));
+    expect(
+      screen.getByText('El puntaje va de 1 a 10, en saltos de 0.5'),
+    ).toBeInTheDocument();
+    expect(onSubmit).not.toHaveBeenCalled();
+  });
 });

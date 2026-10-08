@@ -49,7 +49,7 @@ describe('toBackup / fromBackup', () => {
     const json = JSON.parse(JSON.stringify(toBackup(snap, 123)));
     expect(json).toMatchObject({
       app: 'car-tracker',
-      version: 2,
+      version: 3,
       exportedAt: 123,
     });
     const back = fromBackup(json);
@@ -69,7 +69,7 @@ describe('toBackup / fromBackup', () => {
       'future version',
       {
         app: 'car-tracker',
-        version: 3,
+        version: 4,
         listings: [],
         notes: [],
         photos: [],
@@ -80,6 +80,17 @@ describe('toBackup / fromBackup', () => {
     [
       'v2 without events',
       { app: 'car-tracker', version: 2, listings: [], notes: [], photos: [] },
+    ],
+    [
+      'out of range score',
+      {
+        app: 'car-tracker',
+        version: 3,
+        listings: [{ id: 'l', model: 'Golf', status: 'new', rating: 12 }],
+        notes: [],
+        photos: [],
+        events: [],
+      },
     ],
     [
       'bad event',
@@ -136,6 +147,22 @@ describe('toBackup / fromBackup', () => {
     });
     expect(snap.listings).toHaveLength(1);
     expect(snap.events).toEqual([]);
+  });
+
+  it.each([1, 2])('turns v%s star ratings into an 8.5 score', (version) => {
+    const snap = fromBackup({
+      app: 'car-tracker',
+      version,
+      exportedAt: 0,
+      listings: [
+        { id: 'a', model: 'Golf', status: 'new', rating: 3 },
+        { id: 'b', model: 'Golf', status: 'new' },
+      ],
+      notes: [],
+      photos: [],
+      events: [],
+    });
+    expect(snap.listings.map((l) => l.rating)).toEqual([8.5, undefined]);
   });
 });
 

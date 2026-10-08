@@ -6,18 +6,17 @@ import {
   type ReactNode,
 } from 'react';
 import { useBlocker } from 'react-router';
-import { StarRating } from '../../components/StarRating';
 import { StatusSelect } from '../../components/Status';
 import { useToast } from '../../components/Toast';
 import { btnPrimary, btnSecondary, inputCls } from '../../components/ui';
 import { parseNumberInput } from '../../domain/format';
+import { parseScore } from '../../domain/score';
 import type {
   Listing,
   ListingInput,
   ListingStatus,
   Photo,
   PhotoData,
-  Rating,
 } from '../../domain/listing';
 import { PhotoDraftList } from '../photos/PhotoDraftList';
 import { PhotoDropzone } from '../photos/PhotoDropzone';
@@ -37,29 +36,36 @@ interface FieldState {
   url: string;
   condition: string;
   description: string;
-  rating?: Rating;
+  rating: string;
   status: ListingStatus;
 }
 
-type TextField = Exclude<
-  keyof FieldState,
-  'rating' | 'status' | 'description'
->;
+type TextField = Exclude<keyof FieldState, 'status' | 'description'>;
+type ValidatedField = 'model' | 'rating';
 
 const TEXT_FIELDS: {
   key: TextField;
   label: string;
-  numeric?: boolean;
+  inputMode?: 'numeric' | 'decimal';
   wide?: boolean;
 }[] = [
   { key: 'model', label: 'Modelo *' },
   { key: 'color', label: 'Color' },
-  { key: 'year', label: 'Año', numeric: true },
-  { key: 'km', label: 'Kilómetros', numeric: true },
-  { key: 'price', label: 'Precio (USD)', numeric: true },
+  { key: 'year', label: 'Año', inputMode: 'numeric' },
+  { key: 'km', label: 'Kilómetros', inputMode: 'numeric' },
+  { key: 'price', label: 'Precio (USD)', inputMode: 'numeric' },
+  { key: 'rating', label: 'Puntaje (1–10)', inputMode: 'decimal' },
   { key: 'condition', label: 'Condición' },
   { key: 'url', label: 'Link a la publicación', wide: true },
 ];
+
+function validate(f: FieldState): Partial<Record<ValidatedField, string>> {
+  const errors: Partial<Record<ValidatedField, string>> = {};
+  if (!f.model.trim()) errors.model = 'El modelo es obligatorio';
+  const score = parseScore(f.rating);
+  if (score.error) errors.rating = score.error;
+  return errors;
+}
 
 const toFields = (l?: Listing): FieldState => ({
   model: l?.model ?? '',
@@ -70,7 +76,7 @@ const toFields = (l?: Listing): FieldState => ({
   url: l?.url ?? '',
   condition: l?.condition ?? '',
   description: l?.description ?? '',
-  rating: l?.rating,
+  rating: l?.rating?.toString() ?? '',
   status: l?.status ?? 'new',
 });
 
@@ -86,7 +92,7 @@ const toInput = (f: FieldState): ListingInput => ({
   url: blankToUndefined(f.url),
   condition: blankToUndefined(f.condition),
   description: f.description.trim() === '' ? undefined : f.description,
-  rating: f.rating,
+  rating: parseScore(f.rating).value,
   status: f.status,
 });
 
@@ -115,7 +121,9 @@ export function ListingForm({
   const [dirty, setDirty] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [processingPhotos, setProcessingPhotos] = useState(false);
-  const [error, setError] = useState<string>();
+  const [errors, setErrors] = useState<
+    Partial<Record<ValidatedField, string>>
+  >({});
   const allowNav = useRef(false);
 
   const blocker = useBlocker(
@@ -144,7 +152,7 @@ export function ListingForm({
   const set = <K extends keyof FieldState>(key: K, value: FieldState[K]) => {
     setFields((f) => ({ ...f, [key]: value }));
     setDirty(true);
-    if (key === 'model') setError(undefined);
+    setErrors((e) => ({ ...e, [key]: undefined }));
   };
 
   const changePhotos = (fn: (s: PhotoDraftState) => PhotoDraftState) => {
@@ -163,8 +171,9 @@ export function ListingForm({
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (processingPhotos) return;
-    if (!fields.model.trim()) {
-      setError('El modelo es obligatorio');
+    const found = validate(fields);
+    if (Object.keys(found).length) {
+      setErrors(found);
       return;
     }
     setSubmitting(true);
@@ -182,33 +191,28 @@ export function ListingForm({
   return (
     <form onSubmit={handleSubmit} noValidate className="space-y-6">
       <section className="grid gap-4 sm:grid-cols-2">
-        {TEXT_FIELDS.map(({ key, label, numeric, wide }) => (
+        {TEXT_FIELDS.map(({ key, label, inputMode, wide }) => {
+          const error = errors[key as ValidatedField];
+          return (
           <Field key={key} id={`f-${key}`} label={label} wide={wide}>
             <input
               id={`f-${key}`}
               value={fields[key]}
-              inputMode={numeric ? 'numeric' : undefined}
+              inputMode={inputMode}
               type={key === 'url' ? 'url' : 'text'}
               onChange={(e) => set(key, e.target.value)}
               className={inputCls}
-              aria-invalid={key === 'model' && !!error}
+              aria-invalid={!!error}
             />
-            {key === 'model' && error && (
-              <p className="text-sm text-red-600">{error}</p>
-            )}
+            {error && <p className="text-sm text-red-600">{error}</p>}
           </Field>
-        ))}
+          );
+        })}
         <Field id="f-status" label="Estado">
           <StatusSelect
             id="f-status"
             value={fields.status}
             onChange={(v) => set('status', v)}
-          />
-        </Field>
-        <Field label="Calificación">
-          <StarRating
-            value={fields.rating}
-            onChange={(v) => set('rating', v)}
           />
         </Field>
         <Field id="f-description" label="Descripción de la publicación" wide>

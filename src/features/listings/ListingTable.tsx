@@ -5,7 +5,7 @@ import {
   useReactTable,
 } from '@tanstack/react-table';
 import { useNavigate } from 'react-router';
-import { StarRating } from '../../components/StarRating';
+import { ScoreBadge } from '../../components/ScoreBadge';
 import { StatusBadge } from '../../components/Status';
 import {
   MISSING,
@@ -48,7 +48,7 @@ const columns = [
   }),
   col.accessor('rating', {
     header: SORT_LABELS.rating,
-    cell: (c) => <StarRating value={c.getValue()} size="sm" />,
+    cell: (c) => <ScoreBadge value={c.getValue()} size="sm" />,
   }),
   col.accessor('status', {
     header: SORT_LABELS.status,

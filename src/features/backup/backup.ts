@@ -8,9 +8,10 @@ import {
   type Photo,
   type TrackedField,
 } from '../../domain/listing';
+import { isValidScore, MIGRATED_SCORE } from '../../domain/score';
 import { readStorage, writeStorage } from '../../lib/storage';
 
-export const BACKUP_VERSION = 2;
+export const BACKUP_VERSION = 3;
 export const EXPORTED_EVENT = 'car-tracker:exported';
 export const NUDGE_AFTER_DAYS = 14;
 const LAST_EXPORT_KEY = 'car-tracker:lastExportAt';
@@ -68,7 +69,8 @@ export function fromBackup(raw: unknown): DbSnapshot {
   if (!isRecord(raw) || raw.app !== 'car-tracker') {
     throw new BackupError('El archivo no es un backup de Car Tracker.');
   }
-  if (raw.version !== 1 && raw.version !== BACKUP_VERSION) {
+  const legacy = raw.version === 1 || raw.version === 2;
+  if (!legacy && raw.version !== BACKUP_VERSION) {
     throw new BackupError(
       `Versión de backup no soportada: ${String(raw.version)}.`,
     );
@@ -86,7 +88,11 @@ export function fromBackup(raw: unknown): DbSnapshot {
   if (
     !listings.every(
       (l) =>
-        hasStrings(l, ['id', 'model']) && isListingStatus((l as Listing).status),
+        hasStrings(l, ['id', 'model']) &&
+        isListingStatus((l as Listing).status) &&
+        (legacy ||
+          (l as Listing).rating === undefined ||
+          isValidScore((l as Listing).rating)),
     ) ||
     !notes.every((n) => hasStrings(n, ['id', 'listingId', 'text'])) ||
     !photos.every((p) => hasStrings(p, ['id', 'listingId', 'type', 'data'])) ||
@@ -101,7 +107,11 @@ export function fromBackup(raw: unknown): DbSnapshot {
   }
   try {
     return {
-      listings: listings as Listing[],
+      listings: legacy
+        ? (listings as Listing[]).map((l) =>
+            l.rating === undefined ? l : { ...l, rating: MIGRATED_SCORE },
+          )
+        : (listings as Listing[]),
       notes: notes as Note[],
       events: events as ListingEvent[],
       photos: (photos as BackupPhoto[]).map((p) => ({

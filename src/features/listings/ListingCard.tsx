@@ -1,6 +1,6 @@
 import { useState, type MouseEvent } from 'react';
 import { Link } from 'react-router';
-import { StarRating } from '../../components/StarRating';
+import { ScoreBadge } from '../../components/ScoreBadge';
 import { StatusBadge } from '../../components/Status';
 import { usePhoto, usePhotoCount, usePhotos } from '../../db/hooks';
 import {
@@ -96,7 +96,7 @@ export function ListingCard({ listing }: { listing: Listing }) {
         <p className="text-lg font-bold">{formatPrice(listing.price)}</p>
         <div className="mt-auto flex items-center justify-between text-sm text-gray-500">
           <span>{formatKm(listing.km)}</span>
-          <StarRating value={listing.rating} size="sm" />
+          <ScoreBadge value={listing.rating} size="sm" />
         </div>
       </div>
     </Link>
