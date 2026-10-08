@@ -72,4 +72,26 @@ describe('ListingForm', () => {
     expect(photos.items).toHaveLength(1);
     expect(photos.coverKey).toBe(photos.items[0].key);
   });
+
+  it('blocks saving while pasted photos are still processing', async () => {
+    let finish!: (v: { data: ArrayBuffer; type: string }) => void;
+    vi.mocked(compressImage).mockReturnValueOnce(
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
+    );
+    const onSubmit = setup();
+    await userEvent.type(screen.getByLabelText('Modelo *'), 'Golf');
+    const event = new Event('paste', { bubbles: true, cancelable: true });
+    Object.defineProperty(event, 'clipboardData', {
+      value: { files: [new File(['x'], 'a.png', { type: 'image/png' })] },
+    });
+    window.dispatchEvent(event);
+    const save = screen.getByRole('button', { name: 'Guardar' });
+    await waitFor(() => expect(save).toBeDisabled());
+    await userEvent.click(save);
+    expect(onSubmit).not.toHaveBeenCalled();
+    finish({ data: new ArrayBuffer(1), type: 'image/jpeg' });
+    await waitFor(() => expect(save).toBeEnabled());
+  });
 });

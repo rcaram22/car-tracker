@@ -7,21 +7,26 @@ const isImage = (f: File) => f.type.startsWith('image/');
 
 export function PhotoDropzone({
   onAdd,
+  onBusyChange,
 }: {
   onAdd: (photos: PhotoData[]) => void;
+  onBusyChange?: (busy: boolean) => void;
 }) {
   const toast = useToast();
-  const [busy, setBusy] = useState(false);
+  const [pending, setPending] = useState(0);
+  const busy = pending > 0;
+
+  useEffect(() => onBusyChange?.(busy), [busy, onBusyChange]);
 
   const handleFiles = useCallback(
     async (files: File[]) => {
       const images = files.filter(isImage);
       if (!images.length) return;
-      setBusy(true);
+      setPending((n) => n + 1);
       const results = await Promise.allSettled(
         images.map((f) => compressImage(f)),
       );
-      setBusy(false);
+      setPending((n) => n - 1);
       const ok = results.flatMap((r) =>
         r.status === 'fulfilled' ? [r.value] : [],
       );

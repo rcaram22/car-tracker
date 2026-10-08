@@ -114,6 +114,7 @@ export function ListingForm({
   );
   const [dirty, setDirty] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [processingPhotos, setProcessingPhotos] = useState(false);
   const [error, setError] = useState<string>();
   const allowNav = useRef(false);
 
@@ -161,6 +162,7 @@ export function ListingForm({
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (processingPhotos) return;
     if (!fields.model.trim()) {
       setError('El modelo es obligatorio');
       return;
@@ -223,7 +225,7 @@ export function ListingForm({
 
       <section className="space-y-3">
         <h2 className="font-semibold">Fotos</h2>
-        <PhotoDropzone onAdd={addPhotos} />
+        <PhotoDropzone onAdd={addPhotos} onBusyChange={setProcessingPhotos} />
         <PhotoDraftList state={photos} onChange={changePhotos} />
       </section>
 
@@ -231,7 +233,11 @@ export function ListingForm({
         <button type="button" onClick={onCancel} className={btnSecondary}>
           Cancelar
         </button>
-        <button type="submit" disabled={submitting} className={btnPrimary}>
+        <button
+          type="submit"
+          disabled={submitting || processingPhotos}
+          className={btnPrimary}
+        >
           {submitLabel}
         </button>
       </div>
