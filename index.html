@@ -5,11 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Car Tracker</title>
     <script>
+      var theme = 'dark';
       try {
-        if (localStorage.getItem('car-tracker:theme') === 'dark') {
-          document.documentElement.classList.add('dark');
-        }
+        theme = localStorage.getItem('car-tracker:theme') || theme;
       } catch {}
+      if (theme === 'dark') document.documentElement.classList.add('dark');
     </script>
   </head>
   <body>

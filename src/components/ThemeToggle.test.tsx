@@ -6,7 +6,7 @@ import { ThemeToggle } from './ThemeToggle';
 afterEach(() => document.documentElement.classList.remove('dark'));
 
 describe('ThemeToggle', () => {
-  it('starts in light mode when nothing is stored', () => {
+  it('offers dark mode when the page is light', () => {
     render(<ThemeToggle />);
     expect(document.documentElement).not.toHaveClass('dark');
     expect(
