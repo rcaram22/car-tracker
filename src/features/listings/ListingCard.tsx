@@ -21,11 +21,15 @@ export function ListingCard({ listing }: { listing: Listing }) {
       className="group flex flex-col overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition hover:shadow-md"
     >
       <div
-        className="flex aspect-[4/3] items-center justify-center"
+        className="relative flex aspect-[4/3] items-center justify-center overflow-hidden"
         style={url ? undefined : { backgroundColor: colorToHex(listing.color) }}
       >
         {url ? (
-          <img src={url} alt="" className="h-full w-full object-cover" />
+          <img
+            src={url}
+            alt=""
+            className="absolute inset-0 h-full w-full object-cover"
+          />
         ) : (
           <span className="rounded bg-white/80 px-2 py-0.5 text-xs text-gray-600">
             Sin fotos
