@@ -24,6 +24,10 @@ export function usePhoto(id?: string) {
   return useLiveQuery(() => (id ? repo.getPhoto(id) : undefined), [id]);
 }
 
+export function useAllNotes() {
+  return useLiveQuery(() => repo.listAllNotes(), []);
+}
+
 export function useNotes(listingId: string) {
   return useLiveQuery(() => repo.listNotes(listingId), [listingId]);
 }

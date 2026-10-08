@@ -39,4 +39,14 @@ describe('HomePage', () => {
     expect(row).toHaveTextContent('$ 9,000');
     expect(row).toHaveTextContent('??');
   });
+
+  it('finds listings by words in their notes', async () => {
+    const id = await repo.createListing({ model: 'Golf Delta', status: 'new' });
+    await repo.addNote(id, 'Escape modificado');
+    renderRoute(<HomePage />);
+    await screen.findByText(/Golf Alfa/);
+    await userEvent.type(screen.getByLabelText('Buscar'), 'escape');
+    expect(await screen.findByText(/Golf Delta/)).toBeInTheDocument();
+    expect(screen.queryByText(/Golf Alfa/)).toBeNull();
+  });
 });

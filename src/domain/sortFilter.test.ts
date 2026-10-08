@@ -43,6 +43,34 @@ describe('filterListings', () => {
     expect(filterListings([a, b, c], { ...f, q: '1.6' })).toEqual([c]);
   });
 
+  it('searches the pasted description and the year', () => {
+    const a = make({ description: 'Tiene INTAKE de alto flujo' });
+    const b = make({ year: 2005 });
+    const f = { ...DEFAULT_FILTERS };
+    expect(filterListings([a, b], { ...f, q: 'intake' })).toEqual([a]);
+    expect(filterListings([a, b], { ...f, q: '2005' })).toEqual([b]);
+  });
+
+  it('searches notes passed per listing', () => {
+    const a = make({});
+    const b = make({});
+    const notes = { [b.id]: 'Escape deportivo, ruidoso' };
+    expect(
+      filterListings([a, b], { ...DEFAULT_FILTERS, q: 'escape' }, notes),
+    ).toEqual([b]);
+  });
+
+  it('requires every word, across different fields', () => {
+    const a = make({ description: 'Escape nuevo' });
+    const b = make({ description: 'Escape nuevo e intake' });
+    const c = make({ color: 'Azul' });
+    const notes = { [c.id]: 'cambiar escape' };
+    const f = { ...DEFAULT_FILTERS };
+    expect(filterListings([a, b, c], { ...f, q: 'escape intake' }, notes)).toEqual([b]);
+    expect(filterListings([a, b, c], { ...f, q: 'azul escape' }, notes)).toEqual([c]);
+    expect(filterListings([a, b, c], { ...f, q: 'turbo' }, notes)).toEqual([]);
+  });
+
   it('filters by min rating and price range, excluding unknown prices', () => {
     const cheap = make({ price: 7500, rating: 2 });
     const mid = make({ price: 9000, rating: 4 });

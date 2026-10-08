@@ -122,6 +122,10 @@ export function listNotes(listingId: string): Promise<Note[]> {
   return db.notes.where('listingId').equals(listingId).sortBy('createdAt');
 }
 
+export function listAllNotes(): Promise<Note[]> {
+  return db.notes.toArray();
+}
+
 export async function addNote(
   listingId: string,
   text: string,

@@ -52,8 +52,20 @@ export const DEFAULT_FILTERS: Filters = {
   statuses: DEFAULT_VISIBLE_STATUSES,
 };
 
-export function filterListings(listings: Listing[], f: Filters): Listing[] {
-  const q = normalizeText(f.q);
+function searchableText(l: Listing, notes?: string): string {
+  return normalizeText(
+    [l.model, l.color, l.condition, l.year, l.description, notes]
+      .filter((v) => v !== undefined)
+      .join(' '),
+  );
+}
+
+export function filterListings(
+  listings: Listing[],
+  f: Filters,
+  notesByListing: Record<string, string> = {},
+): Listing[] {
+  const words = normalizeText(f.q).split(/\s+/).filter(Boolean);
   return listings.filter(
     (l) =>
       f.statuses.includes(l.status) &&
@@ -62,9 +74,9 @@ export function filterListings(listings: Listing[], f: Filters): Listing[] {
         (l.price !== undefined && l.price >= f.minPrice)) &&
       (f.maxPrice === undefined ||
         (l.price !== undefined && l.price <= f.maxPrice)) &&
-      (q === '' ||
-        [l.model, l.color, l.condition].some(
-          (v) => v !== undefined && normalizeText(v).includes(q),
+      (words.length === 0 ||
+        ((text) => words.every((w) => text.includes(w)))(
+          searchableText(l, notesByListing[l.id]),
         )),
   );
 }

@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { Link } from 'react-router';
 import { btnPrimary, inputCls } from '../../components/ui';
-import { useListings } from '../../db/hooks';
+import { useAllNotes, useListings } from '../../db/hooks';
 import { filterListings, sortListings } from '../../domain/sortFilter';
 import { BackupMenu } from '../backup/BackupMenu';
 import { BackupNudge } from '../backup/BackupNudge';
@@ -17,14 +17,26 @@ const VIEWS: { mode: ViewMode; label: string }[] = [
 
 export function HomePage() {
   const listings = useListings();
+  const notes = useAllNotes();
   const [state, update] = useHomeState();
+
+  const notesByListing = useMemo(() => {
+    const map: Record<string, string> = {};
+    for (const n of notes ?? []) {
+      map[n.listingId] = `${map[n.listingId] ?? ''} ${n.text}`;
+    }
+    return map;
+  }, [notes]);
 
   const visible = useMemo(
     () =>
       listings
-        ? sortListings(filterListings(listings, state.filters), state.sort)
+        ? sortListings(
+            filterListings(listings, state.filters, notesByListing),
+            state.sort,
+          )
         : [],
-    [listings, state.filters, state.sort],
+    [listings, state.filters, state.sort, notesByListing],
   );
 
   return (
@@ -34,7 +46,7 @@ export function HomePage() {
         <input
           type="search"
           aria-label="Buscar"
-          placeholder="Buscar modelo, color, condición…"
+          placeholder="Buscar en publicaciones y notas…"
           value={state.filters.q}
           onChange={(e) =>
             update({ filters: { ...state.filters, q: e.target.value } })
