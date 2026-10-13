@@ -9,13 +9,8 @@ import {
   type TrackedField,
 } from '../../domain/listing';
 import { isValidScore, MIGRATED_SCORE } from '../../domain/score';
-import { readStorage, writeStorage } from '../../lib/storage';
 
 export const BACKUP_VERSION = 3;
-export const EXPORTED_EVENT = 'car-tracker:exported';
-export const NUDGE_AFTER_DAYS = 14;
-const LAST_EXPORT_KEY = 'car-tracker:lastExportAt';
-const DAY_MS = 86_400_000;
 
 type BackupPhoto = Omit<Photo, 'data'> & { data: string };
 
@@ -155,17 +150,4 @@ export async function exportBackup(): Promise<void> {
   const file = toBackup(await exportAll());
   const date = new Date().toLocaleDateString('sv-SE');
   downloadJson(file, `car-tracker-${date}.json`);
-  writeStorage(LAST_EXPORT_KEY, String(file.exportedAt));
-  window.dispatchEvent(new Event(EXPORTED_EVENT));
-}
-
-export function getLastExportAt(): number | undefined {
-  const v = Number(readStorage(LAST_EXPORT_KEY));
-  return v > 0 ? v : undefined;
-}
-
-export function shouldNudge(lastExportAt: number | undefined, now: number) {
-  return (
-    lastExportAt === undefined || now - lastExportAt > NUDGE_AFTER_DAYS * DAY_MS
-  );
 }

@@ -50,7 +50,8 @@ export function BackupMenu() {
     }
   };
 
-  const item = 'block w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700';
+  const item =
+    'block w-full px-4 py-2 text-left text-sm hover:bg-gray-100 dark:hover:bg-gray-700';
 
   return (
     <div className="relative">

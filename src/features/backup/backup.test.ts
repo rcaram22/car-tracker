@@ -6,7 +6,6 @@ import {
   bufferToBase64,
   fromBackup,
   importBackupText,
-  shouldNudge,
   toBackup,
 } from './backup';
 
@@ -30,9 +29,7 @@ async function seed() {
 }
 
 const emptyBackup = () =>
-  JSON.stringify(
-    toBackup({ listings: [], photos: [], notes: [], events: [] }),
-  );
+  JSON.stringify(toBackup({ listings: [], photos: [], notes: [], events: [] }));
 
 describe('base64', () => {
   it('round-trips bytes including large buffers', () => {
@@ -64,7 +61,10 @@ describe('toBackup / fromBackup', () => {
 
   it.each([
     ['empty object', {}],
-    ['other app', { app: 'x', version: 1, listings: [], notes: [], photos: [] }],
+    [
+      'other app',
+      { app: 'x', version: 1, listings: [], notes: [], photos: [] },
+    ],
     [
       'future version',
       {
@@ -190,14 +190,5 @@ describe('importBackupText', () => {
     await seed();
     expect(await importBackupText(emptyBackup(), () => true)).toBe('imported');
     expect((await repo.exportAll()).listings).toHaveLength(0);
-  });
-});
-
-describe('shouldNudge', () => {
-  const day = 86_400_000;
-  it('nudges when never exported or older than 14 days', () => {
-    expect(shouldNudge(undefined, 0)).toBe(true);
-    expect(shouldNudge(0, 15 * day)).toBe(true);
-    expect(shouldNudge(0, 13 * day)).toBe(false);
   });
 });
