@@ -11,6 +11,7 @@ import {
 } from '../../domain/format';
 import type { Listing } from '../../domain/listing';
 import { useObjectUrl } from '../../lib/useObjectUrl';
+import { useSwipe } from '../../lib/useSwipe';
 
 export function ListingCard({ listing }: { listing: Listing }) {
   const cover = usePhoto(listing.coverPhotoId);
@@ -25,12 +26,16 @@ export function ListingCard({ listing }: { listing: Listing }) {
   const shown = photos?.[index] ?? cover;
   const url = useObjectUrl(shown?.data, shown?.type);
 
-  const step = (delta: number) => (e: MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  const browse = (delta: number) => {
     setBrowsing(true);
     setOffset((o) => o + delta);
   };
+  const step = (delta: number) => (e: MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    browse(delta);
+  };
+  const swipe = useSwipe(browse);
 
   const arrow =
     'absolute top-1/2 -translate-y-1/2 rounded-full bg-black/40 px-2.5 py-1 text-lg leading-none text-white opacity-0 transition hover:bg-black/60 group-hover/photo:opacity-100 focus:opacity-100 [@media(hover:none)]:opacity-100';
@@ -41,7 +46,8 @@ export function ListingCard({ listing }: { listing: Listing }) {
       className="group flex flex-col overflow-hidden rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm transition hover:shadow-md"
     >
       <div
-        className="group/photo relative flex aspect-[4/3] items-center justify-center overflow-hidden"
+        {...(count > 1 ? swipe : {})}
+        className="group/photo relative flex aspect-[4/3] touch-pan-y items-center justify-center overflow-hidden"
         style={url ? undefined : { backgroundColor: colorToHex(listing.color) }}
       >
         {url ? (

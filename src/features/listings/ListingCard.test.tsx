@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react';
+import { fireEvent, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it } from 'vitest';
 import * as repo from '../../db/repository';
@@ -52,5 +52,25 @@ describe('ListingCard carousel', () => {
     const { router } = renderRoute(<ListingCard listing={listing} />);
     await userEvent.click(await screen.findByText(/Golf/));
     expect(router.state.location.pathname).toBe(`/listings/${listing.id}`);
+  });
+
+  it('changes photo on swipe without opening the detail', async () => {
+    const listing = await seed(3, 0);
+    const { router } = renderRoute(<ListingCard listing={listing} />);
+    const photo = await screen.findByAltText('Foto 1 de 3');
+    const area = photo.parentElement!;
+    const swipe = (from: number, to: number) => {
+      fireEvent.touchStart(area, { touches: [{ clientX: from, clientY: 0 }] });
+      fireEvent.touchEnd(area, {
+        touches: [],
+        changedTouches: [{ clientX: to, clientY: 5 }],
+      });
+      fireEvent.click(area);
+    };
+    swipe(200, 100);
+    expect(await screen.findByAltText('Foto 2 de 3')).toBeInTheDocument();
+    swipe(100, 200);
+    expect(await screen.findByAltText('Foto 1 de 3')).toBeInTheDocument();
+    expect(router.state.location.pathname).toBe('/');
   });
 });

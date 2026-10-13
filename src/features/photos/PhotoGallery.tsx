@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import type { Photo } from '../../domain/listing';
 import { useObjectUrl } from '../../lib/useObjectUrl';
+import { useSwipe } from '../../lib/useSwipe';
 
 export function PhotoImg({
   photo,
@@ -31,6 +33,9 @@ export function PhotoGallery({
     ),
   );
   const [open, setOpen] = useState(false);
+  const swipe = useSwipe((d) =>
+    setIndex((i) => (i + d + photos.length) % photos.length),
+  );
 
   if (!photos.length) {
     return (
@@ -43,11 +48,14 @@ export function PhotoGallery({
   const safeIndex = Math.min(index, photos.length - 1);
 
   return (
-    <div className="space-y-2">
+    // min-w-0: inside the detail grid, the thumbnail strip would otherwise
+    // stretch the column (and the page) to its full scroll width.
+    <div className="min-w-0 space-y-2">
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="block w-full"
+        {...(photos.length > 1 ? swipe : {})}
+        className="block w-full touch-pan-y"
         aria-label="Ver foto en grande"
       >
         <PhotoImg
@@ -96,6 +104,15 @@ interface LightboxProps {
 function Lightbox({ photos, index, onIndex, onClose }: LightboxProps) {
   const go = (delta: number) =>
     onIndex((index + delta + photos.length) % photos.length);
+  const swipe = useSwipe(go);
+
+  useEffect(() => {
+    const { overflow } = document.body.style;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = overflow;
+    };
+  }, []);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -112,18 +129,21 @@ function Lightbox({ photos, index, onIndex, onClose }: LightboxProps) {
   const navBtn =
     'absolute top-1/2 -translate-y-1/2 rounded-full bg-white/20 px-4 py-3 text-2xl text-white hover:bg-white/30';
 
-  return (
+  return createPortal(
     <div
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-40 flex items-center justify-center bg-black/90 p-4"
+      className="fixed inset-0 z-40 touch-pan-y touch-pinch-zoom overflow-hidden bg-black/90"
       onClick={onClose}
+      {...(photos.length > 1 ? swipe : {})}
     >
-      <div onClick={(e) => e.stopPropagation()} className="contents">
+      <div className="pointer-events-none absolute inset-4 bottom-10">
         <PhotoImg
           photo={photos[index]}
-          className="max-h-full max-w-full object-contain"
+          className="h-full w-full object-contain"
         />
+      </div>
+      <div onClick={(e) => e.stopPropagation()} className="contents">
         {photos.length > 1 && (
           <>
             <button
@@ -153,9 +173,10 @@ function Lightbox({ photos, index, onIndex, onClose }: LightboxProps) {
       >
         ✕
       </button>
-      <span className="absolute bottom-4 text-sm text-white/80">
+      <span className="absolute inset-x-0 bottom-3 text-center text-sm text-white/80">
         {index + 1} / {photos.length}
       </span>
-    </div>
+    </div>,
+    document.body,
   );
 }
