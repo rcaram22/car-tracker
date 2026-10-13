@@ -6,6 +6,7 @@ import {
   type Note,
   type Photo,
 } from '../domain/listing';
+import { pushPut, pushRemove, TABLES } from '../sync/remote';
 import { db } from './schema';
 
 const now = () => Date.now();
@@ -22,7 +23,9 @@ export function getListing(id: string): Promise<Listing | undefined> {
 export async function createListing(input: ListingInput): Promise<string> {
   const id = newId();
   const t = now();
-  await db.listings.add({ ...input, id, createdAt: t, updatedAt: t });
+  const listing = { ...input, id, createdAt: t, updatedAt: t };
+  await db.listings.add(listing);
+  pushPut('listings', [listing]);
   return id;
 }
 
@@ -30,11 +33,12 @@ export async function updateListing(
   id: string,
   patch: Partial<ListingInput>,
 ): Promise<void> {
+  let events: ListingEvent[] = [];
   await db.transaction('rw', db.listings, db.events, async () => {
     const current = await db.listings.get(id);
     if (!current) return;
     const at = now();
-    const events: ListingEvent[] = TRACKED_FIELDS.filter(
+    events = TRACKED_FIELDS.filter(
       (field) => field in patch && patch[field] !== current[field],
     ).map((field) => ({
       id: newId(),
@@ -47,19 +51,29 @@ export async function updateListing(
     await db.listings.update(id, { ...patch, updatedAt: at });
     await db.events.bulkAdd(events);
   });
+  const updated = await db.listings.get(id);
+  if (updated) pushPut('listings', [updated]);
+  pushPut('events', events);
 }
 
 export async function deleteListing(id: string): Promise<void> {
-  await db.transaction(
+  const children = [db.photos, db.notes, db.events] as const;
+  const childIds = await db.transaction(
     'rw',
-    [db.listings, db.photos, db.notes, db.events],
+    [db.listings, ...children],
     async () => {
-      await db.photos.where('listingId').equals(id).delete();
-      await db.notes.where('listingId').equals(id).delete();
-      await db.events.where('listingId').equals(id).delete();
+      const ids = await Promise.all(
+        children.map((t) => t.where('listingId').equals(id).primaryKeys()),
+      );
+      await Promise.all(children.map((t, i) => t.bulkDelete(ids[i])));
       await db.listings.delete(id);
+      return ids;
     },
   );
+  pushRemove('photos', childIds[0]);
+  pushRemove('notes', childIds[1]);
+  pushRemove('events', childIds[2]);
+  pushRemove('listings', [id]);
 }
 
 export function listPhotos(listingId: string): Promise<Photo[]> {
@@ -85,13 +99,16 @@ export async function syncPhotos(
   drafts: PhotoDraftInput[],
   coverIndex: number,
 ): Promise<void> {
+  const removed: string[] = [];
+  const saved: Photo[] = [];
   await db.transaction('rw', db.listings, db.photos, async () => {
     const keep = new Set(drafts.flatMap((d) => (d.id ? [d.id] : [])));
     const existing = await db.photos
       .where('listingId')
       .equals(listingId)
       .primaryKeys();
-    await db.photos.bulkDelete(existing.filter((id) => !keep.has(id)));
+    removed.push(...existing.filter((id) => !keep.has(id)));
+    await db.photos.bulkDelete(removed);
 
     const t = now();
     const ids: string[] = [];
@@ -99,23 +116,32 @@ export async function syncPhotos(
       if (d.id) {
         // update()/modify() deep-clone the record and turn ArrayBuffer into {}
         const existing = await db.photos.get(d.id);
-        if (existing) await db.photos.put({ ...existing, order });
+        if (existing && existing.order !== order) {
+          const photo = { ...existing, order };
+          await db.photos.put(photo);
+          saved.push(photo);
+        }
         ids.push(d.id);
       } else {
-        const id = newId();
-        await db.photos.add({
-          id,
+        const photo: Photo = {
+          id: newId(),
           listingId,
           data: d.data,
           type: d.type,
           order,
           createdAt: t,
-        });
-        ids.push(id);
+        };
+        await db.photos.add(photo);
+        saved.push(photo);
+        ids.push(photo.id);
       }
     }
     await db.listings.update(listingId, { coverPhotoId: ids[coverIndex] });
   });
+  pushRemove('photos', removed);
+  pushPut('photos', saved);
+  const listing = await db.listings.get(listingId);
+  if (listing) pushPut('listings', [listing]);
 }
 
 export function listNotes(listingId: string): Promise<Note[]> {
@@ -130,13 +156,15 @@ export async function addNote(
   listingId: string,
   text: string,
 ): Promise<string> {
-  const id = newId();
-  await db.notes.add({ id, listingId, text, createdAt: now() });
-  return id;
+  const note = { id: newId(), listingId, text, createdAt: now() };
+  await db.notes.add(note);
+  pushPut('notes', [note]);
+  return note.id;
 }
 
 export async function deleteNote(id: string): Promise<void> {
   await db.notes.delete(id);
+  pushRemove('notes', [id]);
 }
 
 export function listEvents(listingId: string): Promise<ListingEvent[]> {
@@ -145,6 +173,7 @@ export function listEvents(listingId: string): Promise<ListingEvent[]> {
 
 export async function deleteEvent(id: string): Promise<void> {
   await db.events.delete(id);
+  pushRemove('events', [id]);
 }
 
 export interface DbSnapshot {
@@ -180,6 +209,11 @@ export async function clearAll(): Promise<void> {
 }
 
 export async function replaceAll(s: DbSnapshot): Promise<void> {
+  const before = await Promise.all(
+    TABLES.map((t) =>
+      db.table<unknown, string>(t).toCollection().primaryKeys(),
+    ),
+  );
   await db.transaction(
     'rw',
     [db.listings, db.photos, db.notes, db.events],
@@ -196,4 +230,13 @@ export async function replaceAll(s: DbSnapshot): Promise<void> {
       await db.events.bulkAdd(s.events);
     },
   );
+
+  TABLES.forEach((table, i) => {
+    const keep = new Set(s[table].map((r) => r.id));
+    pushRemove(
+      table,
+      before[i].filter((id) => !keep.has(id)),
+    );
+    pushPut(table, s[table]);
+  });
 }
