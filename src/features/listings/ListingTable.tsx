@@ -13,6 +13,7 @@ import {
   formatKm,
   formatPrice,
   formatValue,
+  listingTotal,
 } from '../../domain/format';
 import type { Listing } from '../../domain/listing';
 import {
@@ -40,6 +41,15 @@ const columns = [
   }),
   col.accessor('price', {
     header: SORT_LABELS.price,
+    cell: (c) => formatPrice(c.getValue()),
+  }),
+  col.accessor('extraCost', {
+    header: SORT_LABELS.extraCost,
+    cell: (c) => formatPrice(c.getValue()),
+  }),
+  col.accessor((l) => listingTotal(l), {
+    id: 'total',
+    header: SORT_LABELS.total,
     cell: (c) => formatPrice(c.getValue()),
   }),
   col.accessor('condition', {

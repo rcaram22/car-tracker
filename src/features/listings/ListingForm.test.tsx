@@ -48,6 +48,7 @@ describe('ListingForm', () => {
       year: undefined,
       km: 250000,
       price: 9375,
+      extraCost: undefined,
       url: undefined,
       condition: undefined,
       description: undefined,
@@ -113,5 +114,17 @@ describe('ListingForm', () => {
       screen.getByText('El puntaje va de 1 a 10, en saltos de 0.5'),
     ).toBeInTheDocument();
     expect(onSubmit).not.toHaveBeenCalled();
+  });
+
+  it('submits the setup estimate', async () => {
+    const onSubmit = setup();
+    await userEvent.type(screen.getByLabelText('Modelo *'), 'Golf');
+    await userEvent.type(
+      screen.getByLabelText('Puesta a punto estimada (USD)'),
+      '1,500',
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'Guardar' }));
+    await waitFor(() => expect(onSubmit).toHaveBeenCalled());
+    expect(onSubmit.mock.calls[0][0].extraCost).toBe(1500);
   });
 });

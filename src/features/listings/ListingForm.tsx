@@ -33,6 +33,7 @@ interface FieldState {
   year: string;
   km: string;
   price: string;
+  extraCost: string;
   url: string;
   condition: string;
   description: string;
@@ -54,6 +55,11 @@ const TEXT_FIELDS: {
   { key: 'year', label: 'Año', inputMode: 'numeric' },
   { key: 'km', label: 'Kilómetros', inputMode: 'numeric' },
   { key: 'price', label: 'Precio (USD)', inputMode: 'numeric' },
+  {
+    key: 'extraCost',
+    label: 'Puesta a punto estimada (USD)',
+    inputMode: 'numeric',
+  },
   { key: 'rating', label: 'Puntaje (1–10)', inputMode: 'decimal' },
   { key: 'condition', label: 'Condición' },
   { key: 'url', label: 'Link a la publicación', wide: true },
@@ -73,6 +79,7 @@ const toFields = (l?: Listing): FieldState => ({
   year: l?.year?.toString() ?? '',
   km: l?.km?.toString() ?? '',
   price: l?.price?.toString() ?? '',
+  extraCost: l?.extraCost?.toString() ?? '',
   url: l?.url ?? '',
   condition: l?.condition ?? '',
   description: l?.description ?? '',
@@ -89,6 +96,7 @@ const toInput = (f: FieldState): ListingInput => ({
   year: parseNumberInput(f.year),
   km: parseNumberInput(f.km),
   price: parseNumberInput(f.price),
+  extraCost: parseNumberInput(f.extraCost),
   url: blankToUndefined(f.url),
   condition: blankToUndefined(f.condition),
   description: f.description.trim() === '' ? undefined : f.description,

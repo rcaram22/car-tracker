@@ -33,6 +33,7 @@ export interface Listing {
   year?: number;
   km?: number;
   price?: number;
+  extraCost?: number;
   url?: string;
   condition?: string;
   description?: string;

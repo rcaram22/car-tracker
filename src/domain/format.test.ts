@@ -5,6 +5,7 @@ import {
   formatPrice,
   formatValue,
   listingTitle,
+  listingTotal,
   parseNumberInput,
 } from './format';
 
@@ -64,5 +65,19 @@ describe('colorToHex', () => {
     expect(colorToHex(undefined)).toBe('#e5e7eb');
     expect(colorToHex('Bordó oscuro')).toBe('#7f1d1d');
     expect(colorToHex('Champagne')).toBe('#e5e7eb');
+  });
+});
+
+describe('listingTotal', () => {
+  it('adds the setup estimate to the price', () => {
+    expect(listingTotal({ price: 9000, extraCost: 1500 })).toBe(10500);
+  });
+
+  it('counts a missing setup estimate as zero', () => {
+    expect(listingTotal({ price: 9000 })).toBe(9000);
+  });
+
+  it('is unknown without a price', () => {
+    expect(listingTotal({ extraCost: 1500 })).toBeUndefined();
   });
 });

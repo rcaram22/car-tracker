@@ -43,6 +43,12 @@ export function listingTitle(
     .join(' · ');
 }
 
+export function listingTotal(
+  l: Pick<Listing, 'price' | 'extraCost'>,
+): number | undefined {
+  return l.price === undefined ? undefined : l.price + (l.extraCost ?? 0);
+}
+
 export function formatDate(ms: number): string {
   return new Date(ms).toLocaleDateString('es-UY');
 }

@@ -8,6 +8,7 @@ import {
   formatKm,
   formatPrice,
   listingTitle,
+  listingTotal,
 } from '../../domain/format';
 import type { Listing } from '../../domain/listing';
 import { useObjectUrl } from '../../lib/useObjectUrl';
@@ -97,9 +98,32 @@ export function ListingCard({ listing }: { listing: Listing }) {
           <h3 className="font-semibold group-hover:text-blue-700">
             {listingTitle(listing)}
           </h3>
-          <StatusBadge status={listing.status} />
+          <div className="flex shrink-0 items-center gap-1.5">
+            {listing.url && (
+              <button
+                type="button"
+                aria-label="Abrir publicación"
+                title="Abrir publicación"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  window.open(listing.url, '_blank', 'noopener,noreferrer');
+                }}
+                className="rounded px-1 text-gray-500 hover:bg-gray-100 hover:text-blue-600 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-blue-400"
+              >
+                ↗
+              </button>
+            )}
+            <StatusBadge status={listing.status} />
+          </div>
         </div>
         <p className="text-lg font-bold">{formatPrice(listing.price)}</p>
+        {listing.extraCost !== undefined && (
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Total {formatPrice(listingTotal(listing))} (+
+            {formatPrice(listing.extraCost)})
+          </p>
+        )}
         <div className="mt-auto flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
           <span>{formatKm(listing.km)}</span>
           <ScoreBadge value={listing.rating} size="sm" />
