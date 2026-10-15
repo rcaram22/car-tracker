@@ -37,6 +37,10 @@ describe('HomePage', () => {
       await screen.findByRole('cell', { name: 'Golf Alfa' })
     ).closest('tr')!;
     expect(row).toHaveTextContent('$ 9,000');
+    expect(screen.getByRole('button', { name: /^Total/ })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /^Puesta a punto/ }),
+    ).toBeInTheDocument();
     expect(row).toHaveTextContent('??');
   });
 

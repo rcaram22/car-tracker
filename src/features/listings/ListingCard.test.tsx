@@ -1,6 +1,6 @@
 import { fireEvent, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import * as repo from '../../db/repository';
 import { renderRoute } from '../../test/render';
 import { ListingCard } from './ListingCard';
@@ -72,5 +72,59 @@ describe('ListingCard carousel', () => {
     swipe(100, 200);
     expect(await screen.findByAltText('Foto 1 de 3')).toBeInTheDocument();
     expect(router.state.location.pathname).toBe('/');
+  });
+});
+
+describe('ListingCard details', () => {
+  it('opens the listing URL in a new tab without opening the detail', async () => {
+    const id = await repo.createListing({
+      model: 'Golf',
+      status: 'new',
+      url: 'https://example.com/item/1',
+    });
+    const open = vi.spyOn(window, 'open').mockReturnValue(null);
+    const { router } = renderRoute(
+      <ListingCard listing={(await repo.getListing(id))!} />,
+    );
+    await userEvent.click(
+      await screen.findByRole('button', { name: 'Abrir publicación' }),
+    );
+    expect(open).toHaveBeenCalledWith(
+      'https://example.com/item/1',
+      '_blank',
+      'noopener,noreferrer',
+    );
+    expect(router.state.location.pathname).toBe('/');
+  });
+
+  it('hides the link button without a URL', async () => {
+    const id = await repo.createListing({ model: 'Golf', status: 'new' });
+    renderRoute(<ListingCard listing={(await repo.getListing(id))!} />);
+    await screen.findByText(/Golf/);
+    expect(screen.queryByRole('button', { name: 'Abrir publicación' })).toBeNull();
+  });
+
+  it('shows the total only when there is a setup estimate', async () => {
+    const withExtra = await repo.createListing({
+      model: 'Golf A',
+      status: 'new',
+      price: 9000,
+      extraCost: 1500,
+    });
+    const without = await repo.createListing({
+      model: 'Golf B',
+      status: 'new',
+      price: 9000,
+    });
+    renderRoute(
+      <>
+        <ListingCard listing={(await repo.getListing(withExtra))!} />
+        <ListingCard listing={(await repo.getListing(without))!} />
+      </>,
+    );
+    expect(
+      await screen.findByText('Total $ 10,500 (+$ 1,500)'),
+    ).toBeInTheDocument();
+    expect(screen.getAllByText(/^Total/)).toHaveLength(1);
   });
 });

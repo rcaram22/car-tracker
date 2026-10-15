@@ -15,6 +15,7 @@ import {
   formatPrice,
   formatValue,
   listingTitle,
+  listingTotal,
 } from '../../domain/format';
 import type { ListingInput } from '../../domain/listing';
 import { HistoryPanel } from '../history/HistoryPanel';
@@ -108,6 +109,10 @@ export function ListingDetailPage() {
             <Row label="Año">{formatValue(listing.year)}</Row>
             <Row label="Kilómetros">{formatKm(listing.km)}</Row>
             <Row label="Precio">{formatPrice(listing.price)}</Row>
+            <Row label="Puesta a punto">{formatPrice(listing.extraCost)}</Row>
+            <Row label="Total estimado">
+              {formatPrice(listingTotal(listing))}
+            </Row>
             <Row label="Condición">{formatValue(listing.condition)}</Row>
             <Row label="Publicación">
               {listing.url ? (

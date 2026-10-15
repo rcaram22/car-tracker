@@ -48,4 +48,19 @@ describe('ListingDetailPage', () => {
     await waitFor(() => expect(router.state.location.pathname).toBe('/'));
     expect(await repo.getListing(id)).toBeUndefined();
   });
+
+  it('shows the setup estimate and the total in the data sheet', async () => {
+    const id = await repo.createListing({
+      model: 'Golf',
+      status: 'new',
+      price: 9000,
+      extraCost: 1500,
+    });
+    renderDetail(id);
+    const total = await screen.findByText('Total estimado');
+    expect(total.nextElementSibling).toHaveTextContent('$ 10,500');
+    expect(screen.getByText('Puesta a punto').nextElementSibling).toHaveTextContent(
+      '$ 1,500',
+    );
+  });
 });

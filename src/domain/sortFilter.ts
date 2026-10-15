@@ -1,4 +1,4 @@
-import { normalizeText } from './format';
+import { listingTotal, normalizeText } from './format';
 import {
   DEFAULT_VISIBLE_STATUSES,
   LISTING_STATUSES,
@@ -12,6 +12,8 @@ export const SORT_FIELDS = [
   'year',
   'km',
   'price',
+  'extraCost',
+  'total',
   'condition',
   'rating',
   'status',
@@ -26,6 +28,8 @@ export const SORT_LABELS: Record<SortField, string> = {
   year: 'Año',
   km: 'Km',
   price: 'Precio',
+  extraCost: 'Puesta a punto',
+  total: 'Total',
   condition: 'Condición',
   rating: 'Puntaje',
   status: 'Estado',
@@ -100,6 +104,7 @@ export function compareEmptiesLast(
 
 function sortValue(l: Listing, field: SortField): SortValue {
   if (field === 'status') return LISTING_STATUSES.indexOf(l.status);
+  if (field === 'total') return listingTotal(l);
   const v = l[field];
   return v === '' ? undefined : v;
 }

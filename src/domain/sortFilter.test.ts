@@ -107,6 +107,24 @@ describe('sorting', () => {
     ).toEqual(['Azul', 'verde', undefined]);
   });
 
+  it('sorts by total, with unknown prices last', () => {
+    const ls = [
+      make({ price: 9000, extraCost: 2000 }),
+      make({ extraCost: 500 }),
+      make({ price: 10500 }),
+    ];
+    expect(
+      sortListings(ls, { field: 'total', dir: 'desc' }).map((l) => [
+        l.price,
+        l.extraCost,
+      ]),
+    ).toEqual([
+      [9000, 2000],
+      [10500, undefined],
+      [undefined, 500],
+    ]);
+  });
+
   it('sorts status by pipeline order', () => {
     const ls = [
       make({ status: 'sold' }),
