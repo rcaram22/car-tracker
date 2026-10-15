@@ -125,6 +125,20 @@ describe('sorting', () => {
     ]);
   });
 
+  it('sorts by setup cost including checked catalog jobs', () => {
+    const jobs = [
+      { id: 'j', description: 'Cubiertas', amount: 500, priority: 'high' as const, createdAt: 0 },
+    ];
+    const ls = [
+      make({ model: 'A', extraCost: 100 }),
+      make({ model: 'B', jobIds: ['j'] }),
+      make({ model: 'C' }),
+    ];
+    expect(
+      sortListings(ls, { field: 'setup', dir: 'desc' }, jobs).map((l) => l.model),
+    ).toEqual(['B', 'A', 'C']);
+  });
+
   it('sorts status by pipeline order', () => {
     const ls = [
       make({ status: 'sold' }),

@@ -6,7 +6,7 @@ import { ScoreInput } from '../../components/ScoreInput';
 import { StatusSelect } from '../../components/Status';
 import { useToast } from '../../components/Toast';
 import { btnDanger, btnSecondary } from '../../components/ui';
-import { useListing, usePhotos } from '../../db/hooks';
+import { useJobs, useListing, usePhotos } from '../../db/hooks';
 import { deleteListing, updateListing } from '../../db/repository';
 import {
   MISSING,
@@ -18,7 +18,9 @@ import {
   listingTotal,
 } from '../../domain/format';
 import type { ListingInput } from '../../domain/listing';
+import { setupCost } from '../../domain/jobs';
 import { HistoryPanel } from '../history/HistoryPanel';
+import { SetupPanel } from '../jobs/SetupPanel';
 import { NotesPanel } from '../notes/NotesPanel';
 import { PhotoGallery } from '../photos/PhotoGallery';
 
@@ -28,6 +30,7 @@ export function ListingDetailPage() {
   const toast = useToast();
   const listing = useListing(id);
   const photos = usePhotos(id);
+  const jobs = useJobs() ?? [];
 
   if (listing === undefined || photos === undefined) {
     return <p className="p-4 text-gray-500 dark:text-gray-400">Cargando…</p>;
@@ -109,9 +112,11 @@ export function ListingDetailPage() {
             <Row label="Año">{formatValue(listing.year)}</Row>
             <Row label="Kilómetros">{formatKm(listing.km)}</Row>
             <Row label="Precio">{formatPrice(listing.price)}</Row>
-            <Row label="Puesta a punto">{formatPrice(listing.extraCost)}</Row>
+            <Row label="Puesta a punto">
+              {formatPrice(setupCost(listing, jobs) || undefined)}
+            </Row>
             <Row label="Total estimado">
-              {formatPrice(listingTotal(listing))}
+              {formatPrice(listingTotal(listing, jobs))}
             </Row>
             <Row label="Condición">{formatValue(listing.condition)}</Row>
             <Row label="Publicación">
@@ -142,6 +147,8 @@ export function ListingDetailPage() {
           </p>
         </section>
       )}
+
+      <SetupPanel listing={listing} />
 
       <HistoryPanel listingId={id} />
 

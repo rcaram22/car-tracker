@@ -1,3 +1,4 @@
+import { setupCost, type Job } from './jobs';
 import type { Listing } from './listing';
 
 export const MISSING = '??';
@@ -44,9 +45,10 @@ export function listingTitle(
 }
 
 export function listingTotal(
-  l: Pick<Listing, 'price' | 'extraCost'>,
+  l: Pick<Listing, 'price' | 'extraCost' | 'jobIds'>,
+  jobs: Job[] = [],
 ): number | undefined {
-  return l.price === undefined ? undefined : l.price + (l.extraCost ?? 0);
+  return l.price === undefined ? undefined : l.price + setupCost(l, jobs);
 }
 
 export function formatDate(ms: number): string {

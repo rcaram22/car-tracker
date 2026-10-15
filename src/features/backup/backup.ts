@@ -1,4 +1,5 @@
 import { exportAll, replaceAll, type DbSnapshot } from '../../db/repository';
+import { isPriority, type Job } from '../../domain/jobs';
 import {
   TRACKED_FIELDS,
   isListingStatus,
@@ -10,7 +11,7 @@ import {
 } from '../../domain/listing';
 import { isValidScore, MIGRATED_SCORE } from '../../domain/score';
 
-export const BACKUP_VERSION = 3;
+export const BACKUP_VERSION = 4;
 
 type BackupPhoto = Omit<Photo, 'data'> & { data: string };
 
@@ -22,6 +23,7 @@ export interface BackupFile {
   notes: Note[];
   photos: BackupPhoto[];
   events: ListingEvent[];
+  jobs: Job[];
 }
 
 export class BackupError extends Error {}
@@ -51,6 +53,7 @@ export function toBackup(s: DbSnapshot, exportedAt = Date.now()): BackupFile {
     notes: s.notes,
     photos: s.photos.map((p) => ({ ...p, data: bufferToBase64(p.data) })),
     events: s.events,
+    jobs: s.jobs,
   };
 }
 
@@ -65,18 +68,20 @@ export function fromBackup(raw: unknown): DbSnapshot {
     throw new BackupError('El archivo no es un backup de Car Tracker.');
   }
   const legacy = raw.version === 1 || raw.version === 2;
-  if (!legacy && raw.version !== BACKUP_VERSION) {
+  if (!legacy && raw.version !== 3 && raw.version !== BACKUP_VERSION) {
     throw new BackupError(
       `Versión de backup no soportada: ${String(raw.version)}.`,
     );
   }
   const { listings, notes, photos } = raw;
   const events = raw.version === 1 ? [] : raw.events;
+  const jobs = raw.version === BACKUP_VERSION ? raw.jobs : [];
   if (
     !Array.isArray(listings) ||
     !Array.isArray(notes) ||
     !Array.isArray(photos) ||
-    !Array.isArray(events)
+    !Array.isArray(events) ||
+    !Array.isArray(jobs)
   ) {
     throw new BackupError('El backup está incompleto.');
   }
@@ -96,6 +101,10 @@ export function fromBackup(raw: unknown): DbSnapshot {
         hasStrings(e, ['id', 'listingId']) &&
         TRACKED_FIELDS.includes((e as ListingEvent).field as TrackedField) &&
         typeof (e as ListingEvent).at === 'number',
+    ) ||
+    !jobs.every(
+      (j) =>
+        hasStrings(j, ['id', 'description']) && isPriority((j as Job).priority),
     )
   ) {
     throw new BackupError('El backup tiene datos inválidos.');
@@ -109,6 +118,7 @@ export function fromBackup(raw: unknown): DbSnapshot {
         : (listings as Listing[]),
       notes: notes as Note[],
       events: events as ListingEvent[],
+      jobs: jobs as Job[],
       photos: (photos as BackupPhoto[]).map((p) => ({
         ...p,
         data: base64ToBuffer(p.data),

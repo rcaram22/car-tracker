@@ -153,3 +153,35 @@ describe('history', () => {
     expect((await repo.exportAll()).events).toEqual([]);
   });
 });
+
+describe('jobs catalog', () => {
+  it('seeds the initial list once, even if run twice', async () => {
+    await repo.seedJobs();
+    await repo.seedJobs();
+    const jobs = await repo.listJobs();
+    expect(jobs).toHaveLength(12);
+    expect(jobs[0]).toMatchObject({ description: 'Cubiertas', amount: 500 });
+  });
+
+  it('adds, updates and deletes a job', async () => {
+    const id = await repo.addJob();
+    await repo.updateJob(id, { description: 'Embrague', amount: 400, priority: 'high' });
+    expect(await repo.listJobs()).toEqual([
+      expect.objectContaining({ id, description: 'Embrague', amount: 400, priority: 'high' }),
+    ]);
+    await repo.updateJob(id, { amount: undefined });
+    expect((await repo.listJobs())[0].amount).toBeUndefined();
+    await repo.deleteJob(id);
+    expect(await repo.listJobs()).toEqual([]);
+  });
+
+  it('is part of the snapshot', async () => {
+    await repo.seedJobs();
+    const snap = await repo.exportAll();
+    expect(snap.jobs).toHaveLength(12);
+    await repo.clearAll();
+    expect(await repo.listJobs()).toEqual([]);
+    await repo.replaceAll(snap);
+    expect(await repo.listJobs()).toHaveLength(12);
+  });
+});

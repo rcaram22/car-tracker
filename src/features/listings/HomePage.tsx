@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { Link } from 'react-router';
-import { btnPrimary, inputCls } from '../../components/ui';
-import { useAllNotes, useListings } from '../../db/hooks';
+import { btnPrimary, btnSecondary, inputCls } from '../../components/ui';
+import { useAllNotes, useJobs, useListings } from '../../db/hooks';
 import { filterListings, sortListings } from '../../domain/sortFilter';
 import { BackupMenu } from '../backup/BackupMenu';
 import { FiltersBar } from './FiltersBar';
@@ -17,6 +17,7 @@ const VIEWS: { mode: ViewMode; label: string }[] = [
 export function HomePage() {
   const listings = useListings();
   const notes = useAllNotes();
+  const jobs = useJobs();
   const [state, update] = useHomeState();
 
   const notesByListing = useMemo(() => {
@@ -33,9 +34,10 @@ export function HomePage() {
         ? sortListings(
             filterListings(listings, state.filters, notesByListing),
             state.sort,
+            jobs,
           )
         : [],
-    [listings, state.filters, state.sort, notesByListing],
+    [listings, state.filters, state.sort, notesByListing, jobs],
   );
 
   return (
@@ -69,6 +71,9 @@ export function HomePage() {
             </button>
           ))}
         </div>
+        <Link to="/jobs" className={btnSecondary}>
+          Trabajos
+        </Link>
         <Link to="/listings/new" className={btnPrimary}>
           + Nueva
         </Link>
@@ -91,12 +96,13 @@ export function HomePage() {
             : 'Ninguna publicación coincide con los filtros.'}
         </p>
       ) : state.view === 'grid' ? (
-        <ListingGrid listings={visible} />
+        <ListingGrid listings={visible} jobs={jobs} />
       ) : (
         <ListingTable
           listings={visible}
           sort={state.sort}
           onSort={(sort) => update({ sort })}
+          jobs={jobs}
         />
       )}
 

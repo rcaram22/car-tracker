@@ -6,6 +6,7 @@ import {
   type Note,
   type Photo,
 } from '../domain/listing';
+import { SEED_JOBS, sortJobs, type Job } from '../domain/jobs';
 import { pushPut, pushRemove, TABLES } from '../sync/remote';
 import { db } from './schema';
 
@@ -176,33 +177,78 @@ export async function deleteEvent(id: string): Promise<void> {
   pushRemove('events', [id]);
 }
 
+export async function listJobs(): Promise<Job[]> {
+  return sortJobs(await db.jobs.toArray());
+}
+
+export async function seedJobs(): Promise<void> {
+  const existing = await db.jobs.bulkGet(SEED_JOBS.map((j) => j.id));
+  const t = now();
+  const missing = SEED_JOBS.flatMap((j, i) =>
+    existing[i] ? [] : [{ ...j, createdAt: t + i }],
+  );
+  await db.jobs.bulkAdd(missing);
+  pushPut('jobs', missing);
+}
+
+export async function addJob(): Promise<string> {
+  const job: Job = {
+    id: newId(),
+    description: 'Nuevo trabajo',
+    priority: 'medium',
+    createdAt: now(),
+  };
+  await db.jobs.add(job);
+  pushPut('jobs', [job]);
+  return job.id;
+}
+
+export async function updateJob(
+  id: string,
+  patch: Partial<Omit<Job, 'id' | 'createdAt'>>,
+): Promise<void> {
+  const current = await db.jobs.get(id);
+  if (!current) return;
+  const job = { ...current, ...patch };
+  await db.jobs.put(job);
+  pushPut('jobs', [job]);
+}
+
+export async function deleteJob(id: string): Promise<void> {
+  await db.jobs.delete(id);
+  pushRemove('jobs', [id]);
+}
+
 export interface DbSnapshot {
   listings: Listing[];
   photos: Photo[];
   notes: Note[];
   events: ListingEvent[];
+  jobs: Job[];
 }
 
 export async function exportAll(): Promise<DbSnapshot> {
-  const [listings, photos, notes, events] = await Promise.all([
+  const [listings, photos, notes, events, jobs] = await Promise.all([
     db.listings.toArray(),
     db.photos.toArray(),
     db.notes.toArray(),
     db.events.toArray(),
+    db.jobs.toArray(),
   ]);
-  return { listings, photos, notes, events };
+  return { listings, photos, notes, events, jobs };
 }
 
 export async function clearAll(): Promise<void> {
   await db.transaction(
     'rw',
-    [db.listings, db.photos, db.notes, db.events],
+    [db.listings, db.photos, db.notes, db.events, db.jobs],
     async () => {
       await Promise.all([
         db.listings.clear(),
         db.photos.clear(),
         db.notes.clear(),
         db.events.clear(),
+        db.jobs.clear(),
       ]);
     },
   );
@@ -216,18 +262,20 @@ export async function replaceAll(s: DbSnapshot): Promise<void> {
   );
   await db.transaction(
     'rw',
-    [db.listings, db.photos, db.notes, db.events],
+    [db.listings, db.photos, db.notes, db.events, db.jobs],
     async () => {
       await Promise.all([
         db.listings.clear(),
         db.photos.clear(),
         db.notes.clear(),
         db.events.clear(),
+        db.jobs.clear(),
       ]);
       await db.listings.bulkAdd(s.listings);
       await db.photos.bulkAdd(s.photos);
       await db.notes.bulkAdd(s.notes);
       await db.events.bulkAdd(s.events);
+      await db.jobs.bulkAdd(s.jobs);
     },
   );
 

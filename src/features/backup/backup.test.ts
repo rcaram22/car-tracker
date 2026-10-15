@@ -24,12 +24,15 @@ async function seed() {
     0,
   );
   await repo.addNote(id, 'Tiene deuda');
+  await repo.seedJobs();
   await repo.updateListing(id, { price: 9000 });
   return id;
 }
 
 const emptyBackup = () =>
-  JSON.stringify(toBackup({ listings: [], photos: [], notes: [], events: [] }));
+  JSON.stringify(
+    toBackup({ listings: [], photos: [], notes: [], events: [], jobs: [] }),
+  );
 
 describe('base64', () => {
   it('round-trips bytes including large buffers', () => {
@@ -46,7 +49,7 @@ describe('toBackup / fromBackup', () => {
     const json = JSON.parse(JSON.stringify(toBackup(snap, 123)));
     expect(json).toMatchObject({
       app: 'car-tracker',
-      version: 3,
+      version: 4,
       exportedAt: 123,
     });
     const back = fromBackup(json);
@@ -54,6 +57,8 @@ describe('toBackup / fromBackup', () => {
     expect(back.notes).toEqual(snap.notes);
     expect(back.events).toHaveLength(1);
     expect(back.events).toEqual(snap.events);
+    expect(back.jobs).toHaveLength(12);
+    expect(back.jobs).toEqual(snap.jobs);
     expect(Array.from(new Uint8Array(back.photos[0].data))).toEqual([
       0, 255, 7,
     ]);
@@ -69,7 +74,7 @@ describe('toBackup / fromBackup', () => {
       'future version',
       {
         app: 'car-tracker',
-        version: 4,
+        version: 5,
         listings: [],
         notes: [],
         photos: [],
@@ -87,6 +92,29 @@ describe('toBackup / fromBackup', () => {
         app: 'car-tracker',
         version: 3,
         listings: [{ id: 'l', model: 'Golf', status: 'new', rating: 12 }],
+        notes: [],
+        photos: [],
+        events: [],
+      },
+    ],
+    [
+      'bad job',
+      {
+        app: 'car-tracker',
+        version: 4,
+        listings: [],
+        notes: [],
+        photos: [],
+        events: [],
+        jobs: [{ id: 'j', description: 'Cubiertas', priority: 'urgent' }],
+      },
+    ],
+    [
+      'v4 without jobs',
+      {
+        app: 'car-tracker',
+        version: 4,
+        listings: [],
         notes: [],
         photos: [],
         events: [],
@@ -134,6 +162,20 @@ describe('toBackup / fromBackup', () => {
     ],
   ])('rejects %s', (_, raw) => {
     expect(() => fromBackup(raw)).toThrow(BackupError);
+  });
+
+  it('imports v3 backups with an empty job catalog', () => {
+    const snap = fromBackup({
+      app: 'car-tracker',
+      version: 3,
+      exportedAt: 0,
+      listings: [{ id: 'l', model: 'Golf', status: 'new', rating: 9 }],
+      notes: [],
+      photos: [],
+      events: [],
+    });
+    expect(snap.jobs).toEqual([]);
+    expect(snap.listings[0].rating).toBe(9);
   });
 
   it('still imports v1 backups, with empty history', () => {

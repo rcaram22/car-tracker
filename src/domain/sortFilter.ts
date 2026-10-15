@@ -1,4 +1,5 @@
 import { listingTotal, normalizeText } from './format';
+import { setupCost, type Job } from './jobs';
 import {
   DEFAULT_VISIBLE_STATUSES,
   LISTING_STATUSES,
@@ -12,7 +13,7 @@ export const SORT_FIELDS = [
   'year',
   'km',
   'price',
-  'extraCost',
+  'setup',
   'total',
   'condition',
   'rating',
@@ -28,7 +29,7 @@ export const SORT_LABELS: Record<SortField, string> = {
   year: 'Año',
   km: 'Km',
   price: 'Precio',
-  extraCost: 'Puesta a punto',
+  setup: 'Puesta a punto',
   total: 'Total',
   condition: 'Condición',
   rating: 'Puntaje',
@@ -102,18 +103,23 @@ export function compareEmptiesLast(
   return dir === 'asc' ? c : -c;
 }
 
-function sortValue(l: Listing, field: SortField): SortValue {
+function sortValue(l: Listing, field: SortField, jobs: Job[]): SortValue {
   if (field === 'status') return LISTING_STATUSES.indexOf(l.status);
-  if (field === 'total') return listingTotal(l);
+  if (field === 'total') return listingTotal(l, jobs);
+  if (field === 'setup') return setupCost(l, jobs);
   const v = l[field];
   return v === '' ? undefined : v;
 }
 
-export function sortListings(listings: Listing[], sort: SortState): Listing[] {
+export function sortListings(
+  listings: Listing[],
+  sort: SortState,
+  jobs: Job[] = [],
+): Listing[] {
   return [...listings].sort((a, b) =>
     compareEmptiesLast(
-      sortValue(a, sort.field),
-      sortValue(b, sort.field),
+      sortValue(a, sort.field, jobs),
+      sortValue(b, sort.field, jobs),
       sort.dir,
     ),
   );

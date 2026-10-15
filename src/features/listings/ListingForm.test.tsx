@@ -120,7 +120,7 @@ describe('ListingForm', () => {
     const onSubmit = setup();
     await userEvent.type(screen.getByLabelText('Modelo *'), 'Golf');
     await userEvent.type(
-      screen.getByLabelText('Puesta a punto estimada (USD)'),
+      screen.getByLabelText('Otros gastos (USD)'),
       '1,500',
     );
     await userEvent.click(screen.getByRole('button', { name: 'Guardar' }));

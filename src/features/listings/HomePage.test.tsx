@@ -53,4 +53,11 @@ describe('HomePage', () => {
     expect(await screen.findByText(/Golf Delta/)).toBeInTheDocument();
     expect(screen.queryByText(/Golf Alfa/)).toBeNull();
   });
+
+  it('links to the job catalog', async () => {
+    renderRoute(<HomePage />);
+    expect(
+      await screen.findByRole('link', { name: 'Trabajos' }),
+    ).toHaveAttribute('href', '/jobs');
+  });
 });

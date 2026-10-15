@@ -10,11 +10,19 @@ import {
   listingTitle,
   listingTotal,
 } from '../../domain/format';
+import { setupCost, type Job } from '../../domain/jobs';
 import type { Listing } from '../../domain/listing';
 import { useObjectUrl } from '../../lib/useObjectUrl';
 import { useSwipe } from '../../lib/useSwipe';
 
-export function ListingCard({ listing }: { listing: Listing }) {
+export function ListingCard({
+  listing,
+  jobs = [],
+}: {
+  listing: Listing;
+  jobs?: Job[];
+}) {
+  const setup = setupCost(listing, jobs);
   const cover = usePhoto(listing.coverPhotoId);
   const count = usePhotoCount(listing.id) ?? 0;
   const [offset, setOffset] = useState(0);
@@ -118,10 +126,10 @@ export function ListingCard({ listing }: { listing: Listing }) {
           </div>
         </div>
         <p className="text-lg font-bold">{formatPrice(listing.price)}</p>
-        {listing.extraCost !== undefined && (
+        {setup > 0 && (
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Total {formatPrice(listingTotal(listing))} (+
-            {formatPrice(listing.extraCost)})
+            Total {formatPrice(listingTotal(listing, jobs))} (+
+            {formatPrice(setup)})
           </p>
         )}
         <div className="mt-auto flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">

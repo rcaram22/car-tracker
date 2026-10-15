@@ -1,3 +1,4 @@
+import type { Job } from '../domain/jobs';
 import type { Listing, ListingEvent, Note, Photo } from '../domain/listing';
 
 export interface TableRecords {
@@ -5,11 +6,18 @@ export interface TableRecords {
   photos: Photo;
   notes: Note;
   events: ListingEvent;
+  jobs: Job;
 }
 
 export type TableName = keyof TableRecords;
 
-export const TABLES: TableName[] = ['listings', 'photos', 'notes', 'events'];
+export const TABLES: TableName[] = [
+  'listings',
+  'photos',
+  'notes',
+  'events',
+  'jobs',
+];
 
 export interface RemoteSink {
   put<T extends TableName>(table: T, records: TableRecords[T][]): void;

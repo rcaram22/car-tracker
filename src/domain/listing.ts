@@ -34,6 +34,7 @@ export interface Listing {
   km?: number;
   price?: number;
   extraCost?: number;
+  jobIds?: string[];
   url?: string;
   condition?: string;
   description?: string;

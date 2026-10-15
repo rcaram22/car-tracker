@@ -4,6 +4,7 @@ import {
   getCoreRowModel,
   useReactTable,
 } from '@tanstack/react-table';
+import { useMemo } from 'react';
 import { useNavigate } from 'react-router';
 import { ScoreBadge } from '../../components/ScoreBadge';
 import { StatusBadge } from '../../components/Status';
@@ -15,6 +16,7 @@ import {
   formatValue,
   listingTotal,
 } from '../../domain/format';
+import { setupCost, type Job } from '../../domain/jobs';
 import type { Listing } from '../../domain/listing';
 import {
   SORT_FIELDS,
@@ -25,7 +27,7 @@ import {
 
 const col = createColumnHelper<Listing>();
 
-const columns = [
+const buildColumns = (jobs: Job[]) => [
   col.accessor('model', { header: SORT_LABELS.model }),
   col.accessor('color', {
     header: SORT_LABELS.color,
@@ -43,11 +45,12 @@ const columns = [
     header: SORT_LABELS.price,
     cell: (c) => formatPrice(c.getValue()),
   }),
-  col.accessor('extraCost', {
-    header: SORT_LABELS.extraCost,
-    cell: (c) => formatPrice(c.getValue()),
+  col.accessor((l) => setupCost(l, jobs), {
+    id: 'setup',
+    header: SORT_LABELS.setup,
+    cell: (c) => formatPrice(c.getValue() || undefined),
   }),
-  col.accessor((l) => listingTotal(l), {
+  col.accessor((l) => listingTotal(l, jobs), {
     id: 'total',
     header: SORT_LABELS.total,
     cell: (c) => formatPrice(c.getValue()),
@@ -95,10 +98,12 @@ interface Props {
   listings: Listing[];
   sort: SortState;
   onSort: (s: SortState) => void;
+  jobs?: Job[];
 }
 
-export function ListingTable({ listings, sort, onSort }: Props) {
+export function ListingTable({ listings, sort, onSort, jobs = [] }: Props) {
   const navigate = useNavigate();
+  const columns = useMemo(() => buildColumns(jobs), [jobs]);
   const table = useReactTable({
     data: listings,
     columns,

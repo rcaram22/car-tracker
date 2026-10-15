@@ -24,6 +24,10 @@ export function usePhoto(id?: string) {
   return useLiveQuery(() => (id ? repo.getPhoto(id) : undefined), [id]);
 }
 
+export function useJobs() {
+  return useLiveQuery(() => repo.listJobs(), []);
+}
+
 export function useAllNotes() {
   return useLiveQuery(() => repo.listAllNotes(), []);
 }

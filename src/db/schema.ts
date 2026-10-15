@@ -5,6 +5,7 @@ import type {
   Note,
   Photo,
 } from '../domain/listing';
+import type { Job } from '../domain/jobs';
 import { MIGRATED_SCORE } from '../domain/score';
 
 export type CarTrackerDb = Dexie & {
@@ -12,6 +13,7 @@ export type CarTrackerDb = Dexie & {
   photos: EntityTable<Photo, 'id'>;
   notes: EntityTable<Note, 'id'>;
   events: EntityTable<ListingEvent, 'id'>;
+  jobs: EntityTable<Job, 'id'>;
 };
 
 export function defineSchema(d: Dexie): CarTrackerDb {
@@ -35,6 +37,10 @@ export function defineSchema(d: Dexie): CarTrackerDb {
           if (l.rating !== undefined) l.rating = MIGRATED_SCORE;
         }),
     );
+
+  d.version(4).stores({
+    jobs: 'id, priority',
+  });
 
   return d as CarTrackerDb;
 }

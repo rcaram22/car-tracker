@@ -57,7 +57,7 @@ const TEXT_FIELDS: {
   { key: 'price', label: 'Precio (USD)', inputMode: 'numeric' },
   {
     key: 'extraCost',
-    label: 'Puesta a punto estimada (USD)',
+    label: 'Otros gastos (USD)',
     inputMode: 'numeric',
   },
   { key: 'rating', label: 'Puntaje (1–10)', inputMode: 'decimal' },

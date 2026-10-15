@@ -127,4 +127,22 @@ describe('ListingCard details', () => {
     ).toBeInTheDocument();
     expect(screen.getAllByText(/^Total/)).toHaveLength(1);
   });
+
+  it('includes checked catalog jobs in the total', async () => {
+    const id = await repo.createListing({
+      model: 'Golf',
+      status: 'new',
+      price: 9000,
+      jobIds: ['tires'],
+    });
+    const jobs = [
+      { id: 'tires', description: 'Cubiertas', amount: 500, priority: 'high' as const, createdAt: 0 },
+    ];
+    renderRoute(
+      <ListingCard listing={(await repo.getListing(id))!} jobs={jobs} />,
+    );
+    expect(
+      await screen.findByText('Total $ 9,500 (+$ 500)'),
+    ).toBeInTheDocument();
+  });
 });
